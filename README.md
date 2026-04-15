@@ -4,13 +4,13 @@
 
 ### This tool is agnostic, and can be run without a physical button, if you so choose. It just makes it more convenient. Essentially, you just need something that launches the python script.
 
-`alerts.py` is a small helper script targetged adt Linux users that builds a Discord-formatted alert string, copies it to the clipboard with `wl-copy`, and pastes it with `ydotool`.
+`alerts.py` is a small helper script targeted at Linux users that builds a Discord-formatted alert string, copies it to the clipboard with `wl-copy`, and pastes it with `ydotool`.
 
 Personally, I use this with a Stream Deck, but you can use whatever you want as long as it can run a python script. I made this script with multi-interface usages in mind.
 
 ## What It Does
 
-The script supports two kinds of actions:
+The script currently supports three kinds of actions:
 
 1. Status actions
    These build a full alert/status string and replace the current field contents with `Ctrl+A` + paste.
@@ -18,6 +18,9 @@ The script supports two kinds of actions:
 
 2. Timestamp actions
    These build only the Discord relative timestamp suffix and paste it at the current cursor position without `Ctrl+A`.
+
+3. Custom message actions (`-M`)
+   These paste a freeform message at the current cursor position. The message can contain `{Variable}` tokens and `{ConstructorName}` shorthands that are resolved before pasting.
 
 ## Requirements
 
@@ -38,11 +41,83 @@ Future plans include adding small API functionality, or OCR to determine who the
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `USE_NITRO_EMOJI` | `True` | Include animated Nitro-only emojis in `active_alert`. Set to `False` if you don't have Discord Nitro. |
+| `NAME` | `"YourName"` | Your name, used in the `{Introduction}` variable and anywhere else `NAME` is referenced. |
+| `MESSAGE_CONSTRUCTORS` | *(see below)* | Shorthand names that expand into full template strings before variable resolution. |
+| `MESSAGE_VARIABLES` | *(see below)* | Named tokens used in `-M` messages. List values are randomly selected; plain strings are always used as-is. |
+
+### Message Constructors
+
+Constructors are named shorthands that expand into a full template string. Use `{ConstructorName}` inside your `-M` string to expand one.
+
+```python
+MESSAGE_CONSTRUCTORS: dict[str, str] = {
+    # Greeting openers
+    "FullGreetingQuestionnaire": "{Greetings}, {Introduction}, {Pleasantries}. {Questionnaire}?",
+    "FullGreetingStranded":      "{Greetings}, {Introduction}. I see that you are stranded in space. Can you provide me with your oxygen and thirst levels?",
+    "FullGreetingMoreInfo":      "{Greetings}, {Introduction}, {Pleasantries}. {Moreinfo}",
+    "GreetingQUpdate":           "{Greetings}, {Introduction}. {QUpdate}",
+
+    # Thank → follow-up
+    "ThanksMoreInfo":    "{Thanks}, {Moreinfo}",
+    "ThanksUpdate":      "{Thanks}. {AUpdate}",
+    "ThanksWaitQUpdate": "{ThanksWait}. {QUpdate}",
+    "ThanksWaitMoreInfo":"{ThanksWait}. {Moreinfo}",
+
+    # Apology → follow-up
+    "ApologyWaitQUpdate":           "{ApologiesWait}. {QUpdate}",
+    "ApologyWaitUpdate":            "{ApologiesWait}. {AUpdate}",
+    "ApologyInconvenienceMoreInfo": "{ApologiesInconvenience}. {Moreinfo}",
+    "ApologyFrustrationMoreInfo":   "{ApologiesFrustration}. {Moreinfo}",
+    "ApologyConfusionMoreInfo":     "{ApologiesConfusion}. {Moreinfo}",
+
+    # Vitals checks
+    "VitalsCheck":                  "{OxygenLevel}? {ThirstHunger}?",
+    "VitalsRadiationCheck":         "{OxygenLevel}? {ThirstHunger}? {Radiation}?",
+    "GreetingVitalsCheck":          "{Greetings}, {Introduction}. {OxygenLevel}? {ThirstHunger}?",
+    "GreetingVitalsRadiationCheck": "{Greetings}, {Introduction}. {OxygenLevel}? {ThirstHunger}? {Radiation}?",
+}
+```
+
+Constructor values may themselves contain `{VarName}` tokens — they are resolved in the normal variable pass after expansion.
+
+> **Note:** Do not end constructor templates with punctuation. Let the auto-formatter handle it, or include your own closing punctuation (e.g. `?`) directly in the template string.
+
+### Message Variables
+
+Variables are resolved after constructors. List values are randomly chosen on each run; plain strings are always used verbatim.
+
+```python
+MESSAGE_VARIABLES: dict[str, str | list[str]] = {
+    # General
+    "Greetings":              ["Hey there", "Hello", "Hi", ...],
+    "Introduction":           [f"my name is {NAME}", f"I'm {NAME}", ...],
+    "Pleasantries":           ["I hope you're having a great day", ...],
+    "Questionnaire":          ["please take a moment to fill out the questionnaire", ...],
+    "QUpdate":                ["can you provide me with an update while we wait for a team leader", ...],
+    "Moreinfo":               ["could you provide me with some more information", ...],
+    "AUpdate":                ["good news, I have an update for you", ...],
+    # Acknowledgements
+    "Thanks":                 ["thanks", "thank you", ...],
+    "ThanksWait":             ["thank you for your patience and cooperation", ...],
+    # Apologies
+    "ApologiesWait":          ["I'm sorry for the delay", ...],
+    "ApologiesInconvenience": ["I apologize for the inconvenience", ...],
+    "ApologiesFrustration":   ["I apologize for any frustration this may have caused", ...],
+    "ApologiesConfusion":     ["I'm sorry for any confusion", ...],
+    # Vitals
+    "OxygenLevel":            ["what are your current oxygen levels", ...],
+    "Radiation":              ["are you currently in a radiation zone", ...],
+    "ThirstHunger":           ["what are your current thirst and hunger levels", ...],
+}
+```
+
+> **Note:** Do not end variable values with punctuation. Punctuation and spacing belong in your `-M` template string or constructor. The auto-formatter will capitalize the first letter and add a trailing period if needed.
 
 ## Usage
 
 ```bash
 python alerts.py <action>
+python alerts.py -M "message with optional {Variables}"
 ```
 
 If no action or an invalid action is provided, the script exits with an error.
@@ -80,7 +155,7 @@ This means the current input field is overwritten.
 
 #### Note
 
-Statuses and Timestamp actions function differently. Consider Timestamp actions suplimental, so the script will not overwrite `Ctrl+A/Ctrl+V` whatever is in the current text box if you soley use the Timestamp functionality.
+Statuses and Timestamp actions function differently. Consider Timestamp actions supplemental, so the script will not overwrite `Ctrl+A/Ctrl+V` whatever is in the current text box if you solely use the Timestamp functionality.
 
 
 
@@ -128,6 +203,42 @@ When a timestamp action runs, the script:
 
 This means the timestamp is inserted at the cursor instead of replacing the field.
 
+## Custom Message Actions (`-M`)
+
+The `-M` flag pastes a freeform message at the current cursor position (no `Ctrl+A`). The message is processed through constructor expansion and variable resolution before pasting.
+
+```bash
+python alerts.py -M "your message here"
+python alerts.py -M "{ConstructorName}"
+python alerts.py -M "{Greetings}, {Introduction}. {Pleasantries}."
+```
+
+### Auto-Formatting
+
+After all tokens are resolved, the message is automatically cleaned up:
+
+- The first letter is capitalized.
+- The first letter after any sentence-ending punctuation (`. `, `! `, `? `) is capitalized.
+- A trailing period is appended if the message does not already end with `.`, `!`, or `?`.
+
+### Custom Message Examples
+
+| Command | Result |
+|---------|--------|
+| `python alerts.py -M "{FullGreetingQuestionnaire}"` | Greeting + intro + pleasantry + questionnaire prompt, randomly chosen phrases |
+| `python alerts.py -M "{FullGreetingMoreInfo}"` | Greeting + intro + pleasantry + request for more info |
+| `python alerts.py -M "{GreetingQUpdate}"` | Greeting + intro + ask for update while waiting on a TL |
+| `python alerts.py -M "{ThanksUpdate}"` | Random thanks phrase + deliver an update |
+| `python alerts.py -M "{ThanksWaitQUpdate}"` | Patience acknowledgement + ask for a queue update |
+| `python alerts.py -M "{ApologyWaitUpdate}"` | Apologize for the wait + deliver an update |
+| `python alerts.py -M "{ApologyConfusionMoreInfo}"` | Apologize for confusion + ask for more info |
+| `python alerts.py -M "{GreetingVitalsCheck}"` | Greeting + intro + ask oxygen and thirst/hunger levels |
+| `python alerts.py -M "{GreetingVitalsRadiationCheck}"` | Greeting + intro + ask oxygen, thirst/hunger, and radiation |
+| `python alerts.py -M "{VitalsCheck}"` | Ask oxygen and thirst/hunger levels (no greeting, mid-conversation) |
+| `python alerts.py -M "{Greetings}, {Introduction}!"` | e.g. "Hey, I'm YourName!" |
+| `python alerts.py -M "hello"` | "Hello." (capitalized, period appended) |
+| `python alerts.py -M "Anything you want."` | Pasted as-is (already ends with punctuation) |
+
 ## Internal Function Overview
 
 ### `build_status(case_name)`
@@ -164,19 +275,31 @@ Parses commands that allow an optional signed time offset.
 - Bare `+N` / `-N` with no unit is treated as minutes for backwards compatibility
 - Returns `None` when the action does not match the expected pattern
 
+### `resolve_message(text)`
+
+Resolves a freeform `-M` message string.
+
+- First pass: expands any `{ConstructorName}` tokens using `MESSAGE_CONSTRUCTORS` (case-insensitive)
+- Second pass: replaces every `{VarName}` token using `MESSAGE_VARIABLES`; list values are randomly chosen
+- Unknown token names are left unchanged
+- Capitalizes the first letter of the message
+- Capitalizes the first letter after sentence-ending punctuation
+- Appends a trailing period if the message has no closing punctuation
+
 ### `_clipboard_paste(text, *, replace, delay=0.1)`
 
 Copies `text` to the Wayland clipboard and pastes it.
 
 - `replace=True` — sends `Ctrl+A` before pasting, overwriting the current field (used by status actions)
-- `replace=False` — pastes at the cursor without selecting anything (used by timestamp actions)
+- `replace=False` — pastes at the cursor without selecting anything (used by timestamp and custom message actions)
 
 ### `main()`
 
 The CLI entry point.
 
-- Reads the single command-line argument
-- Detects whether it is a timestamp action or a status action
+- Reads command-line arguments
+- If `-M "message"` is given, resolves and pastes the custom message
+- Otherwise, detects whether the single argument is a timestamp action or a status action
 - Calls the correct paste function
 - Prints any error to stderr and exits with status `1`
 
@@ -195,6 +318,13 @@ The CLI entry point.
 | `python` | `alerts.py` | `timestamp` | Relative timestamp, now — inserted at cursor |
 | `python` | `alerts.py` | `timestamp+20` | Relative timestamp, +20 min — inserted at cursor |
 | `python` | `alerts.py` | `timestamp-4m30s` | Relative timestamp, −4m 30s — inserted at cursor |
+| `python` | `alerts.py` | `-M "{FullGreetingQuestionnaire}"` | Greeting + intro + questionnaire — inserted at cursor |
+| `python` | `alerts.py` | `-M "{GreetingQUpdate}"` | Greeting + intro + queue update ask — inserted at cursor |
+| `python` | `alerts.py` | `-M "{ApologyWaitUpdate}"` | Apology for wait + update delivery — inserted at cursor |
+| `python` | `alerts.py` | `-M "{GreetingVitalsCheck}"` | Greeting + intro + oxygen and thirst/hunger check — inserted at cursor |
+| `python` | `alerts.py` | `-M "{GreetingVitalsRadiationCheck}"` | Greeting + intro + full vitals + radiation check — inserted at cursor |
+| `python` | `alerts.py` | `-M "{Greetings}, {Introduction}!"` | Custom greeting with name — inserted at cursor |
+| `python` | `alerts.py` | `-M "Any freeform text."` | Freeform message — inserted at cursor |
 
 ---
 
@@ -203,3 +333,9 @@ python alerts.py active_alert-4m30s
 ```
 
 Pastes the full active alert emoji string with a Discord relative timestamp set 4 minutes and 30 seconds in the past, overwriting the current input field via `Ctrl+A` + `Ctrl+V`.
+
+```bash
+python alerts.py -M "{FullGreetingQuestionnaire}"
+```
+
+Expands the `FullGreetingQuestionnaire` constructor, resolves all `{Variable}` tokens with randomly selected values, auto-formats the result, and pastes it at the current cursor position.
