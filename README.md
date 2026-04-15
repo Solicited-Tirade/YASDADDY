@@ -4,7 +4,7 @@
 
 ### This tool is agnostic, and can be run without a physical button, if you so choose. It just makes it more convenient. Essentially, you just need something that launches the python script.
 
-`alerts.py` is a small helper script targeted at Linux users that builds a Discord-formatted alert string, copies it to the clipboard with `wl-copy`, and pastes it with `ydotool`.
+`alerts.py` is a small helper script that builds a Discord-formatted alert string, copies it to the clipboard, and pastes it. It is currently implemented for Linux (`wl-copy` + `ydotool`), with a Windows backend planned. The active backend is controlled by `OS_MODE` in `alerts.py`.
 
 Personally, I use this with a Stream Deck, but you can use whatever you want as long as it can run a python script. I made this script with multi-interface usages in mind.
 
@@ -27,39 +27,99 @@ The script currently supports three kinds of actions:
 The script expects these tools to exist on the system:
 
 - `python` (may be `python3`, `python3.14`, etc. — use whatever your environment resolves to)
-- `wl-copy`
-- `ydotool`
+- `wl-copy` *(Linux only)*
+- `ydotool` *(Linux only)*
 
 > **Note:** All examples in this guide use `python` for brevity. Substitute the correct invocation for your system (e.g. `python3 alerts.py active_alert`).
 
 ## Future Plans
 
-Future plans include adding small API functionality, or OCR to determine who the client is, to perform a `%CLIENT_NAME%` grabbing functionality to personalize messages.
+- **Windows clipboard support** — the backend stub is in place; copy/paste automation via `win32clipboard` / `ctypes SendInput` is the next step.
+- **Small API functionality or OCR** to determine who the client is and perform `%CLIENT_NAME%` grabbing to personalize messages automatically.
 
 ## Configuration
 
+These variables live at the top of `alerts.py` and control runtime behaviour.
+
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `OS_MODE` | `"auto"` | Controls which clipboard/input backend is used. `"auto"` detects the OS at runtime via `platform.system()`. `"linux"` or `"windows"` forces a specific backend regardless of detection. Set manually for a more privacy-focused approach — auto-detection never runs. |
 | `USE_NITRO_EMOJI` | `True` | Include animated Nitro-only emojis in `active_alert`. Set to `False` if you don't have Discord Nitro. |
-| `NAME` | `"YourName"` | Your name, used in the `{Introduction}` variable and anywhere else `NAME` is referenced. |
-| `MESSAGE_CONSTRUCTORS` | *(see below)* | Shorthand names that expand into full template strings before variable resolution. |
-| `MESSAGE_VARIABLES` | *(see below)* | Named tokens used in `-M` messages. List values are randomly selected; plain strings are always used as-is. |
+| `MESSAGE_CONSTRUCTORS` | *(see Messages.py)* | Shorthand names that expand into full template strings before variable resolution. Override or extend in `CustomMessages.py`. |
+| `MESSAGE_VARIABLES` | *(see Messages.py)* | Named tokens used in `-M` messages. List values are randomly selected; plain strings are always used as-is. Override or extend in `CustomMessages.py`. |
+
+### Setting Your Name
+
+Your name is not configured directly in `alerts.py`. Set it in `CustomMessages.py` so it survives updates:
+
+```python
+# CustomMessages.py
+MESSAGE_VARIABLES: dict[str, str | list[str]] = {
+    "Name": "YourName",
+}
+```
+
+It will then appear anywhere `{Name}` is used — `{Introduction}` phrases, `{LDispatchGreeting}`, and any constructor or `-M` string you write.
+
+## Customization Files
+
+Messages are split across two files so your personal changes are never overwritten when you pull a repo update.
+
+| File | Purpose |
+|------|---------|
+| `Messages.py` | Ships with the repo. Contains all built-in `MESSAGE_CONSTRUCTORS` and `MESSAGE_VARIABLES`. **Do not edit** — it will be overwritten on updates. |
+| `CustomMessages.py` | Your personal overrides. Never touched by repo updates. Any key defined here takes precedence over the same key in `Messages.py`. |
+
+### How Overrides Work
+
+`alerts.py` merges the two files at startup with custom entries winning:
+
+```python
+MESSAGE_CONSTRUCTORS = {**_base_constructors, **_custom_constructors}
+MESSAGE_VARIABLES    = {**_base_variables,    **_custom_variables}
+```
+
+You only need to list the keys you want to change. Everything else falls back to `Messages.py`.
+
+**Example — override a constructor in `CustomMessages.py`:**
+
+```python
+# Messages.py default:
+MESSAGE_CONSTRUCTORS: dict[str, str] = {
+"ApologyWaitQUpdate": "{ApologiesWait}. {QUpdate}"
+}
+
+# CustomMessages.py override (your version wins):
+MESSAGE_CONSTRUCTORS: dict[str, str] = {
+    "ApologyWaitQUpdate": "{ApologiesWait}. {TeamEnRoute}. {QUpdate}"
+}
+```
+
+**Example — override a variable:**
+
+```python
+MESSAGE_VARIABLES: dict[str, str | list[str]] = {
+    "Name": "YourName",
+    "Greetings": ["Hey there", "Hello"],  # narrowed down to your preferred options
+}
+```
 
 ### Message Constructors
 
 Constructors are named shorthands that expand into a full template string. Use `{ConstructorName}` inside your `-M` string to expand one. They are your personal toolkit — build out exactly the messages you want to send, composed from whatever variables and fixed text fit your style. A constructor can be as simple or as elaborate as you like, and you can add as many as you need.
 
 ```python
+# Messages.py (built-in)
 MESSAGE_CONSTRUCTORS: dict[str, str] = {
     "FullGreetingQuestionnaire": "{Greetings}, {Introduction}, {Pleasantries}. {Questionnaire}?",
     "DispatchGreeting":          "{Greetings}! {Introduction}, and {StandingBy}. {SendingInvites}...",
     "EnRoute":                   "{AUpdate}! {TeamEnRoute}. {ArrivalNotice}.",
     "CloseSuccess":              "{ThanksWait}! As we conclude our service...",
-    # ... see MESSAGE_CONSTRUCTORS in alerts.py for the full list
+    # ... see Messages.py for the full list
 }
 ```
 
-Constructors are grouped in `alerts.py` as follows:
+Constructors are grouped in `Messages.py` as follows:
 
 - **Greeting openers** — `FullGreetingQuestionnaire`, `FullGreetingStranded`, `FullGreetingMoreInfo`, `GreetingQUpdate`
 - **Thank → follow-up** — `ThanksMoreInfo`, `ThanksUpdate`, `ThanksWaitQUpdate`, `ThanksWaitMoreInfo`
@@ -83,12 +143,13 @@ Constructor values may themselves contain `{VarName}` tokens — they are resolv
 Variables are resolved after constructors. List values are randomly chosen on each run; plain strings are always used verbatim. They are the building blocks of the personalization system — swap in your own phrases, adjust the tone, and tailor the wording to your personality. Adding more options to a list increases variety without requiring any changes to your constructors.
 
 ```python
+# Messages.py (built-in defaults)
 MESSAGE_VARIABLES: dict[str, str | list[str]] = {
     # Identity
-    "Name":                   NAME,  # plain string, always resolves to the configured NAME
+    "Name":                   "YourName",  # override in CustomMessages.py
     # General
     "Greetings":              ["Hey there", "Hello", "Hi", ...],
-    "Introduction":           [f"my name is {NAME}", f"I'm {NAME}", ...],
+    "Introduction":           ["my name is {Name}", "I'm {Name}", ...],  # {Name} resolved at build time
     "Pleasantries":           ["I hope you're having a great day", ...],
     "Questionnaire":          ["please take a moment to fill out the questionnaire", ...],
     "QUpdate":                ["can you provide me with an update", ...],
@@ -252,6 +313,29 @@ After all tokens are resolved, the message is automatically cleaned up:
 
 ## Internal Function Overview
 
+### `_resolve_os()`
+
+Determines which clipboard/input backend to use.
+
+- If `OS_MODE` is `"linux"` or `"windows"`, returns that value immediately — `platform` is never imported.
+- If `OS_MODE` is `"auto"`, imports `platform` at call time and inspects `platform.system()`.
+- Raises `RuntimeError` for any unsupported OS detected under `"auto"` mode.
+
+### `_clipboard_paste(text, *, replace, delay=0.1)`
+
+OS-aware clipboard dispatcher. Calls `_resolve_os()` and routes to the appropriate backend.
+
+- `replace=True` — sends `Ctrl+A` before pasting, overwriting the current field (used by status actions).
+- `replace=False` — pastes at the cursor without selecting anything (used by timestamp and custom message actions).
+
+#### `_clipboard_paste_linux(text, *, replace, delay=0.1)`
+
+Linux backend. Copies `text` to the Wayland clipboard via `wl-copy` and sends keystrokes via `ydotool`.
+
+#### `_clipboard_paste_windows(text, *, replace, delay=0.1)`
+
+Windows backend stub. Raises `NotImplementedError` until implemented. Planned: `win32clipboard` or `ctypes SetClipboardData` for the clipboard, `ctypes SendInput` or `pyautogui` for `Ctrl+A` / `Ctrl+V`.
+
 ### `build_status(case_name)`
 
 Builds the full output string for a named status action.
@@ -290,19 +374,12 @@ Parses commands that allow an optional signed time offset.
 
 Resolves a freeform `-M` message string.
 
-- First pass: expands any `{ConstructorName}` tokens using `MESSAGE_CONSTRUCTORS` (case-insensitive)
-- Second pass: replaces every `{VarName}` token using `MESSAGE_VARIABLES`; list values are randomly chosen
-- Unknown token names are left unchanged
-- Capitalizes the first letter of the message
-- Capitalizes the first letter after sentence-ending punctuation
-- Appends a trailing period if the message has no closing punctuation
-
-### `_clipboard_paste(text, *, replace, delay=0.1)`
-
-Copies `text` to the Wayland clipboard and pastes it.
-
-- `replace=True` — sends `Ctrl+A` before pasting, overwriting the current field (used by status actions)
-- `replace=False` — pastes at the cursor without selecting anything (used by timestamp and custom message actions)
+- **Constructor pass:** expands any `{ConstructorName}` tokens using `MESSAGE_CONSTRUCTORS` (case-insensitive).
+- **Variable pass (×2):** replaces every `{VarName}` token using `MESSAGE_VARIABLES`; list values are randomly chosen. A second pass runs immediately after to resolve any variable tokens that appeared *inside* a variable value — for example, `{Name}` embedded in an `{Introduction}` phrase.
+- Unknown token names are left unchanged.
+- Capitalizes the first letter of the message.
+- Capitalizes the first letter after sentence-ending punctuation.
+- Appends a trailing period if the message has no closing punctuation.
 
 ### `main()`
 
