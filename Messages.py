@@ -272,7 +272,6 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = {
         "keep tapping the accept key until it goes through",
         "spam your accept key to accept",
         "hit the accept key repeatedly until it goes through",
-        "mash that accept key",
     ],
     "TeamEnRoute": [
         "our team is en route",
@@ -289,7 +288,6 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = {
     "SecuringArea": [
         "please be patient while we secure the area",
         "give us a moment to secure the situation",
-        "hold tight while we handle the area",
         "please bear with us as we work to secure the area",
     ],
     "NoContactClose": [
