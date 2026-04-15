@@ -199,9 +199,11 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = {
 ## Usage
 
 ```bash
-python alerts.py <action>
-python alerts.py -M "message with optional {Variables}"
+python alerts.py [-S] <action>
+python alerts.py [-S] -M "message with optional {Variables}"
 ```
+
+The optional `-S` flag sends Enter immediately after the paste, submitting the message without touching the keyboard. It can be placed anywhere in the argument list.
 
 If no action or an invalid action is provided, the script exits with an error.
 
@@ -233,6 +235,7 @@ When a status action runs, the script:
 3. Sends `Ctrl+A`.
 4. Waits briefly.
 5. Sends `Ctrl+V`.
+6. *(if `-S`)* Waits briefly, then sends `Enter`.
 
 This means the current input field is overwritten.
 
@@ -283,6 +286,7 @@ When a timestamp action runs, the script:
 1. Copies the generated timestamp to the clipboard.
 2. Waits briefly.
 3. Sends `Ctrl+V`.
+4. *(if `-S`)* Waits briefly, then sends `Enter`.
 
 This means the timestamp is inserted at the cursor instead of replacing the field.
 
@@ -294,6 +298,7 @@ The `-M` flag pastes a freeform message at the current cursor position (no `Ctrl
 python alerts.py -M "your message here"
 python alerts.py -M "{ConstructorName}"
 python alerts.py -M "{Greetings}, {Introduction}. {Pleasantries}."
+python alerts.py -S -M "{DispatchGreeting}"   # paste and submit immediately
 ```
 
 ### Auto-Formatting
@@ -332,20 +337,21 @@ Determines which clipboard/input backend to use.
 - If `OS_MODE` is `"auto"`, imports `platform` at call time and inspects `platform.system()`.
 - Raises `RuntimeError` for any unsupported OS detected under `"auto"` mode.
 
-### `_clipboard_paste(text, *, replace, delay=0.1)`
+### `_clipboard_paste(text, *, replace, send=False, delay=0.1)`
 
 OS-aware clipboard dispatcher. Calls `_resolve_os()` and routes to the appropriate backend.
 
 - `replace=True` — sends `Ctrl+A` before pasting, overwriting the current field (used by status actions).
 - `replace=False` — pastes at the cursor without selecting anything (used by timestamp and custom message actions).
+- `send=True` — sends `Enter` after the paste, submitting the message immediately (enabled by the `-S` flag).
 
-#### `_clipboard_paste_linux(text, *, replace, delay=0.1)`
+#### `_clipboard_paste_linux(text, *, replace, send=False, delay=0.1)`
 
 Linux backend. Copies `text` to the Wayland clipboard via `wl-copy` and sends keystrokes via `ydotool`.
 
-#### `_clipboard_paste_windows(text, *, replace, delay=0.1)`
+#### `_clipboard_paste_windows(text, *, replace, send=False, delay=0.1)`
 
-Windows backend stub. Raises `NotImplementedError` until implemented. Planned: `win32clipboard` or `ctypes SetClipboardData` for the clipboard, `ctypes SendInput` or `pyautogui` for `Ctrl+A` / `Ctrl+V`.
+Windows backend stub. Raises `NotImplementedError` until implemented. Planned: `win32clipboard` or `ctypes SetClipboardData` for the clipboard, `ctypes SendInput` or `pyautogui` for `Ctrl+A` / `Ctrl+V` / `Enter`.
 
 ### `build_status(case_name)`
 
@@ -396,10 +402,10 @@ Resolves a freeform `-M` message string.
 
 The CLI entry point.
 
-- Reads command-line arguments
+- Strips the optional `-S` flag from the argument list and sets `send=True` if present
 - If `-M "message"` is given, resolves and pastes the custom message
 - Otherwise, detects whether the single argument is a timestamp action or a status action
-- Calls the correct paste function
+- Passes `send` through to `_clipboard_paste` so Enter fires when requested
 - Prints any error to stderr and exits with status `1`
 
 ## Quick Reference
@@ -424,6 +430,9 @@ The CLI entry point.
 | `python` | `alerts.py` | `-M "{GreetingVitalsRadiationCheck}"` | Greeting + intro + full vitals + radiation check — inserted at cursor |
 | `python` | `alerts.py` | `-M "{Greetings}, {Introduction}!"` | Custom greeting with name — inserted at cursor |
 | `python` | `alerts.py` | `-M "Any freeform text."` | Freeform message — inserted at cursor |
+| `python` | `alerts.py` | `-S active_alert` | Active alert status — replaces field and submits |
+| `python` | `alerts.py` | `-S -M "{DispatchGreeting}"` | Dispatch greeting — inserted at cursor and submits |
+| `python` | `alerts.py` | `-S -M "{FullGreetingQuestionnaire}"` | Full greeting — inserted at cursor and submits |
 
 ---
 

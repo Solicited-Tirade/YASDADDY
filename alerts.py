@@ -123,6 +123,8 @@ STATUS_TEMPLATES = {
 SELECT_ALL_KEYS = ["ydotool", "key", "29:1", "30:1", "30:0", "29:0"]  # Ctrl+A
 # Key sequence for Ctrl+V to paste clipboard contents.
 PASTE_KEYS = ["ydotool", "key", "29:1", "47:1", "47:0", "29:0"]  # Ctrl+V
+# Key sequence for Enter to submit the current field.
+ENTER_KEYS = ["ydotool", "key", "28:1", "28:0"]  # Enter
 
 
 def parse_offset_action(action: str, prefix: str) -> tuple[str, int] | None:
@@ -262,7 +264,7 @@ def _resolve_os() -> str:
     )
 
 
-def _clipboard_paste_linux(text: str, *, replace: bool, delay: float = 0.1) -> None:
+def _clipboard_paste_linux(text: str, *, replace: bool, send: bool = False, delay: float = 0.1) -> None:
     subprocess.run(["wl-copy"], input=text, text=True, check=True)
     time.sleep(delay)
     if replace:
@@ -270,57 +272,67 @@ def _clipboard_paste_linux(text: str, *, replace: bool, delay: float = 0.1) -> N
         subprocess.run(SELECT_ALL_KEYS, check=True)
         time.sleep(delay)
     subprocess.run(PASTE_KEYS, check=True)
+    if send:
+        time.sleep(delay)
+        subprocess.run(ENTER_KEYS, check=True)
 
 
-def _clipboard_paste_windows(text: str, *, replace: bool, delay: float = 0.1) -> None:
-    del text, replace, delay  # unused until Windows support is implemented
+def _clipboard_paste_windows(text: str, *, replace: bool, send: bool = False, delay: float = 0.1) -> None:
+    del text, replace, send, delay  # unused until Windows support is implemented
     # TODO: implement Windows clipboard (e.g. win32clipboard or ctypes SetClipboardData)
-    # and keypress automation (e.g. ctypes SendInput or pyautogui) for Ctrl+A / Ctrl+V.
+    # and keypress automation (e.g. ctypes SendInput or pyautogui) for Ctrl+A / Ctrl+V / Enter.
     raise NotImplementedError(
         "Windows clipboard support is not yet implemented. "
         "Set OS_MODE = 'linux' if you are on Linux."
     )
 
 
-def _clipboard_paste(text: str, *, replace: bool, delay: float = 0.1) -> None:
+def _clipboard_paste(text: str, *, replace: bool, send: bool = False, delay: float = 0.1) -> None:
     backend = _resolve_os()
     if backend == "linux":
-        _clipboard_paste_linux(text, replace=replace, delay=delay)
+        _clipboard_paste_linux(text, replace=replace, send=send, delay=delay)
     elif backend == "windows":
-        _clipboard_paste_windows(text, replace=replace, delay=delay)
+        _clipboard_paste_windows(text, replace=replace, send=send, delay=delay)
     else:
         raise RuntimeError(f"No clipboard backend for OS: {backend!r}")
 
 
 def main() -> int:
+    # Strip the optional -S flag before dispatching; its presence enables auto-submit.
+    args = sys.argv[1:]
+    send = "-S" in args
+    if send:
+        args = [a for a in args if a != "-S"]
+
     # -M "message" pastes a custom message, optionally with {Variable} interpolation.
-    if len(sys.argv) == 3 and sys.argv[1] == "-M":
+    if len(args) == 2 and args[0] == "-M":
         try:
-            message = resolve_message(sys.argv[2])
-            _clipboard_paste(message, replace=False)
+            message = resolve_message(args[1])
+            _clipboard_paste(message, replace=False, send=send)
             return 0
         except Exception as exc:
             print(exc, file=sys.stderr)
             return 1
 
     # Expect exactly one action argument after the script name.
-    if len(sys.argv) != 2:
+    if len(args) != 1:
         print(
-            "Usage: python alerts.py <action[+N|-N|+NmNs|-NmNs|+Nm|-Nm|+Ns|-Ns]>\n"
-            '       python alerts.py -M "message with optional {Variables}"',
+            "Usage: python alerts.py [-S] <action[+N|-N|+NmNs|-NmNs|+Nm|-Nm|+Ns|-Ns]>\n"
+            '       python alerts.py [-S] -M "message with optional {Variables}"\n'
+            "       -S  send immediately by pressing Enter after the paste",
             file=sys.stderr,
         )
         return 1
 
     try:
         # Normalize the action so commands are case-insensitive.
-        action = sys.argv[1].lower()
+        action = args[0].lower()
         # Timestamp actions insert at the cursor instead of replacing the whole field.
         if timestamp := build_timestamp_action(action):
-            _clipboard_paste(timestamp, replace=False)
+            _clipboard_paste(timestamp, replace=False, send=send)
         else:
             # All other recognized actions are full status templates.
-            _clipboard_paste(build_status(action), replace=True)
+            _clipboard_paste(build_status(action), replace=True, send=send)
         return 0
     except Exception as exc:
         # Report invalid actions or shell failures to stderr for easier debugging.
