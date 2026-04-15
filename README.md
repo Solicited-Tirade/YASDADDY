@@ -1,7 +1,7 @@
 # YASDADDY Guide
 
 ## Yet Another Stream Deck Alert tool Developed for Dispatchers with Ydotool 
-
+> ###### Contrary to the name, its not exclusively for Dispatchers. If anything, it is mostly geared towards Team Leaders, but with its extensive customizability, you can mix and match however you please. The name came out of my chidlish need to shoehorn "YASDADDY" into a tool name.
 ### This tool is agnostic, and can be run without a physical button, if you so choose. It just makes it more convenient. Essentially, you just need something that launches the python script.
 
 `alerts.py` is a small helper script that builds a Discord-formatted alert string, copies it to the clipboard, and pastes it. It is currently implemented for Linux (`wl-copy` + `ydotool`), with a Windows backend planned. The active backend is controlled by `OS_MODE` in `Settings.py`.
@@ -113,7 +113,7 @@ Set `NAME` in `Settings.py`:
 NAME: str = "YourName"
 ```
 
-It will appear anywhere `{Name}` is used — `{Introduction}` phrases, `{LDispatchGreeting}`, and any constructor or `-M` string you write.
+It will appear anywhere `{Name}` is used — `{Introduction}` phrases, `{LLeaderGreeting}`, and any constructor or `-M` string you write.
 
 ## Customization Files
 

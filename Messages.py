@@ -40,7 +40,7 @@ MESSAGE_CONSTRUCTORS: dict[str, str] = {
     # Opening / intake
     "LWelcomeQuestionnaire":       "Thank you for choosing Medrunner Services!\n\nOnce the Questionnaire has been submitted we can proceed.",
     "LQuestionnaireReminder":      "Could you please fill in the Questionnaire?\nIf you have already, be sure to press submit for I don't see them.",
-    "LDispatchGreeting":           "Hello! My name is {Name}, and I'll be leading the team dispatched to your location.\n\nI will be sending you a friend request and/or party invite.\n(To accept the invite, make sure you're in first-person view and spam the key to the right of P — typically the [ key - though it may vary depending on your keyboard layout.)\n\nPlease confirm here when you are ready to receive the invites!",
+    "LLeaderGreeting":           "Hello! My name is {Name}, and I'll be leading the team dispatched to your location.\n\nI will be sending you a friend request and/or party invite.\n(To accept the invite, make sure you're in first-person view and spam the key to the right of P — typically the [ key - though it may vary depending on your keyboard layout.)\n\nPlease confirm here when you are ready to receive the invites!",
     "LNoTeamsAvailable":           "Thank you for choosing Medrunner Services!\n\nWe've received your alert — no need to worry. All active teams are currently deployed, but one will be assigned to you shortly.\nIn the meantime, if you haven't already, please complete and submit the questionnaire.\n\nThank you for your patience!",
     "LInviteConfirmationReminder": "Please let me know when you are ready to receive the invites!",
 
@@ -76,7 +76,7 @@ MESSAGE_CONSTRUCTORS: dict[str, str] = {
     # Opening / intake
     "WelcomeQuestionnaire":       "{ServiceWelcome}!\n\n{Questionnaire}.",
     "QuestionnaireReminder":      "{Questionnaire}.\nIf you have already, be sure to press submit for I don't see them.",
-    "DispatchGreeting":           "{Greetings}! {Introduction}, and {StandingBy}.\n\n{SendingInvites}.\n(To accept the invite, make sure you're in first-person view and spam the key to the right of P — typically the [ key - though it may vary depending on your keyboard layout.)\n\n{ReadyForInvites}!",
+    "LeaderGreeting":           "{Greetings}! {Introduction}, and {TeamLeadIntro}.\n\n{LeaderSendingInvites}.\n(To accept the invite, make sure you're in first-person view and spam the key to the right of P — typically the [ key - though it may vary depending on your keyboard layout.)",
     "NoTeamsAvailable":           "{ServiceWelcome}!\n\n{Received} — {Assurances}. All active teams are currently deployed, but one will be assigned to you shortly.\nIn the meantime, if you haven't already, please complete and submit the questionnaire.\n\n{ThanksWait}!",
     "InviteConfirmationReminder": "{ThanksWait}! {ReadyForInvites}.",
 
@@ -101,6 +101,13 @@ MESSAGE_CONSTRUCTORS: dict[str, str] = {
     "DeployMoreInfo":   "{Moreinfo}. To help ensure we provide an efficient service, please answer the following 2 questions:\n\n1) Will you be needing to use our Medical Bed?\n2) Will you be needing an Extraction to the Closest Station?",
     "EnRoute":          "{AUpdate}! {TeamEnRoute}. {ArrivalNotice}.",
     "ShortlyArriving":  "{AUpdate}! Depending on the situation, we may not pick you up immediately. {SecuringArea}.\n\nWe will reach you soon. Switching over to in-game party chat now.\nNote: If you are downed, it will be harder to read until you are revived.",
+
+    # Quick shorthands
+    "QuickGreeting":  "{Greetings}! {Introduction}.",
+    "BriefUpdate":    "{AUpdate}! {TeamEnRoute}. {ArrivalNotice}.",
+    "ServerFull":     "{AUpdate}! {TeamEnRoute}. {ArrivalNotice}. {ApologiesWait} — your server is full, there may be a short delay.",
+    "VitalsFollowUp": "{ThanksWait}. Before we proceed — {OxygenLevel}? {ThirstHunger}?",
+    "ClosingThanks":  "{ThanksWait}! {ServiceWelcome} — we hope to assist you again in the future.",
 
     # Closing
     "CloseSuccess": "{ThanksWait}! As we conclude our service, we'd like to sincerely thank you for trusting us. We hope today's response was prompt, professional, and met your expectations. Your health and satisfaction are our top priorities, and we hope to assist you again in the future if needed.\n\nIf you have a moment, we'd greatly appreciate it if you could leave a rating and comment on the alert card to let us know how we did today!",
@@ -249,18 +256,22 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = {
         "rest assured, we're on it",
         "you're in safe hands",
     ],
-    "StandingBy": [
+    "DispatchIntro": [
         "I'll be your dispatcher for this alert",
-        "I'm handling your dispatch today",
+        "I'm handling dispatch for your alert today",
         "I'll be coordinating your rescue",
     ],
-    "SendingInvites": [
+    "TeamLeadIntro": [
+        "I'll be the team lead for this alert",
+        "I'll be leading the rescue efforts for your alert",
+    ],
+    "DispatchSendingInvites": [
         "the team leader will be sending you a friend request and/or party invite",
         "your team leader will reach out via friend request and party invite",
         "expect a friend request and party invite from the team leader shortly",
         "the team leader will send you a friend request followed by a party invite",
     ],
-    "ReadyForInvites": [
+    "LeaderSendingInvites": [
         "please let me know when you are ready to receive the invites",
         "let me know when you're ready for the invites",
         "give me the go-ahead when you're ready for the invites",
@@ -301,5 +312,11 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = {
         "closing this alert due to no response",
         "we're standing down as we were unable to reach you",
         "standing down — we were unable to make contact",
+    ],
+    "Signoff": [
+        "stay safe out there",
+        "fly safe",
+        "we've got your back",
+        "safe travels in the 'Verse",
     ],
 }
