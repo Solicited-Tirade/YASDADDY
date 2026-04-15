@@ -72,35 +72,46 @@ Messages are split across two files so your personal changes are never overwritt
 
 ### How Overrides Work
 
-`alerts.py` merges the two files at startup with custom entries winning:
+`alerts.py` merges the two files at startup. Constructors use a plain dict merge (last key wins). Variables use a smarter merge that understands `+`/`-` key modifiers:
 
-```python
-MESSAGE_CONSTRUCTORS = {**_base_constructors, **_custom_constructors}
-MESSAGE_VARIABLES    = {**_base_variables,    **_custom_variables}
-```
+| Key style | Effect |
+|-----------|--------|
+| `"Key"` | **Replace** — your list fully replaces the base list |
+| `"+Key"` | **Append** — your phrases are added to the base rotation |
+| `"-Key"` | **Remove** — listed phrases are pruned from the base rotation |
 
 You only need to list the keys you want to change. Everything else falls back to `Messages.py`.
 
-**Example — override a constructor in `CustomMessages.py`:**
-
-```python
-# Messages.py default:
-MESSAGE_CONSTRUCTORS: dict[str, str] = {
-"ApologyWaitQUpdate": "{ApologiesWait}. {QUpdate}"
-}
-
-# CustomMessages.py override (your version wins):
-MESSAGE_CONSTRUCTORS: dict[str, str] = {
-    "ApologyWaitQUpdate": "{ApologiesWait}. {TeamEnRoute}. {QUpdate}"
-}
-```
-
-**Example — override a variable:**
+**Example — add phrases to an existing variable:**
 
 ```python
 MESSAGE_VARIABLES: dict[str, str | list[str]] = {
-    "Name": "YourName",
-    "Greetings": ["Hey there", "Hello"],  # narrowed down to your preferred options
+    "+Greetings": ["Howdy", "What's up"],  # base phrases kept, these added
+}
+```
+
+**Example — remove phrases from an existing variable:**
+
+```python
+MESSAGE_VARIABLES: dict[str, str | list[str]] = {
+    "-Greetings": ["Good day", "Greetings"],  # prune the formal ones
+}
+```
+
+**Example — fully replace a variable:**
+
+```python
+MESSAGE_VARIABLES: dict[str, str | list[str]] = {
+    "Greetings": ["Hey there", "Hello"],  # base phrases discarded
+}
+```
+
+**Example — override a constructor:**
+
+```python
+# Constructors are strings — no +/- modifiers, plain key wins.
+MESSAGE_CONSTRUCTORS: dict[str, str] = {
+    "ApologyWaitQUpdate": "{ApologiesWait}. {TeamEnRoute}. {QUpdate}",
 }
 ```
 

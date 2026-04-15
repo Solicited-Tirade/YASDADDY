@@ -22,10 +22,37 @@ OS_MODE: str = "auto"  # "auto" | "linux" | "windows"
 # IMPORTANT: Set to False to strip the animated Nitro-only emojis from ACTIVE_ALERT_TEMPLATE. If you do not have Nitro, this will not work well for you.
 USE_NITRO_EMOJI = True
 
+def _merge_variables(
+    base: dict[str, str | list[str]],
+    custom: dict[str, str | list[str]],
+) -> dict[str, str | list[str]]:
+    # Merge custom variable overrides into the base, supporting +/- key modifiers.
+    # +Key  — append the custom list to the existing base list for Key
+    # -Key  — remove each listed item from the existing base list for Key
+    # Key   — fully replace the base entry (plain override)
+    result: dict[str, str | list[str]] = dict(base)
+    for key, value in custom.items():
+        if key.startswith("+"):
+            base_key = key[1:]
+            if base_key in result and isinstance(result[base_key], list) and isinstance(value, list):
+                result[base_key] = result[base_key] + value
+            else:
+                result[base_key] = value
+        elif key.startswith("-"):
+            base_key = key[1:]
+            if base_key in result and isinstance(result[base_key], list) and isinstance(value, list):
+                remove_set = set(value)
+                result[base_key] = [v for v in result[base_key] if v not in remove_set]
+        else:
+            result[key] = value
+    return result
+
+
 # Messages are loaded from Messages.py (built-in) and CustomMessages.py (your overrides).
-# Custom entries take precedence — see CustomMessages.py to add or override constructors and variables.
+# Constructors: plain key override only. Variables: use +Key / -Key to append or remove
+# individual phrases without replacing the full list — see CustomMessages.py.
 MESSAGE_CONSTRUCTORS: dict[str, str] = {**_base_constructors, **_custom_constructors}
-MESSAGE_VARIABLES: dict[str, str | list[str]] = {**_base_variables, **_custom_variables}
+MESSAGE_VARIABLES: dict[str, str | list[str]] = _merge_variables(_base_variables, _custom_variables)
 
 
 # Discord relative timestamp format, e.g. <t:1710000000:R>.
