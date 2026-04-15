@@ -2,6 +2,8 @@
 
 ## Yet Another Stream Deck Alert tool Developed for Dispatchers with Ydotool 
 
+### This tool is agnostic, and can be run without a physical button, if you so choose. It just makes it more convenient. Essentially, you just need something that launches the python script.
+
 `alerts.py` is a small helper script targetged adt Linux users that builds a Discord-formatted alert string, copies it to the clipboard with `wl-copy`, and pastes it with `ydotool`.
 
 Personally, I use this with a Stream Deck, but you can use whatever you want as long as it can run a python script. I made this script with multi-interface usages in mind.
