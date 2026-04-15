@@ -4,9 +4,41 @@
 
 ### This tool is agnostic, and can be run without a physical button, if you so choose. It just makes it more convenient. Essentially, you just need something that launches the python script.
 
-`alerts.py` is a small helper script that builds a Discord-formatted alert string, copies it to the clipboard, and pastes it. It is currently implemented for Linux (`wl-copy` + `ydotool`), with a Windows backend planned. The active backend is controlled by `OS_MODE` in `alerts.py`.
+`alerts.py` is a small helper script that builds a Discord-formatted alert string, copies it to the clipboard, and pastes it. It is currently implemented for Linux (`wl-copy` + `ydotool`), with a Windows backend planned. The active backend is controlled by `OS_MODE` in `Settings.py`.
 
 Personally, I use this with a Stream Deck, but you can use whatever you want as long as it can run a python script. I made this script with multi-interface usages in mind.
+
+---
+
+## Table of Contents
+
+- [What It Does](#what-it-does)
+- [Requirements](#requirements)
+- [Future Plans](#future-plans)
+- [Configuration](#configuration)
+  - [Emoji Templates](#emoji-templates)
+  - [Setting Your Name](#setting-your-name)
+- [Customization Files](#customization-files)
+  - [How Overrides Work](#how-overrides-work)
+  - [Message Constructors](#message-constructors)
+  - [Message Variables](#message-variables)
+- [Usage](#usage)
+- [Supported Status Actions](#supported-status-actions)
+- [Offset Format](#offset-format)
+- [Supported Timestamp Actions](#supported-timestamp-actions)
+- [Custom Message Actions](#custom-message-actions)
+- [Internal Function Overview](#internal-function-overview)
+  - [`_resolve_os`](#_resolve_os)
+  - [`_clipboard_paste`](#_clipboard_paste)
+  - [`build_status`](#build_status)
+  - [`build_timestamp`](#build_timestamp)
+  - [`build_timestamp_action`](#build_timestamp_action)
+  - [`parse_offset_action`](#parse_offset_action)
+  - [`resolve_message`](#resolve_message)
+  - [`main`](#main)
+- [Quick Reference](#quick-reference)
+
+---
 
 ## What It Does
 
@@ -39,14 +71,24 @@ The script expects these tools to exist on the system:
 
 ## Configuration
 
-These variables live at the top of `alerts.py` and control runtime behaviour.
+User-configurable settings live in `Settings.py`. Edit this file to match your setup. It is gitignored, so your changes are never overwritten by updates.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `OS_MODE` | `"auto"` | Controls which clipboard/input backend is used. `"auto"` detects the OS at runtime via `platform.system()`. `"linux"` or `"windows"` forces a specific backend regardless of detection. Set manually for a more privacy-focused approach — auto-detection never runs. |
 | `USE_NITRO_EMOJI` | `True` | Include animated Nitro-only emojis in `active_alert`. Set to `False` if you don't have Discord Nitro. |
-| `MESSAGE_CONSTRUCTORS` | *(see Messages.py)* | Shorthand names that expand into full template strings before variable resolution. Override or extend in `CustomMessages.py`. |
-| `MESSAGE_VARIABLES` | *(see Messages.py)* | Named tokens used in `-M` messages. List values are randomly selected; plain strings are always used as-is. Override or extend in `CustomMessages.py`. |
+
+### Emoji Templates
+
+`Settings.py` also contains all Discord emoji sequences used by status actions. Each template is a string of custom emoji IDs tied to a specific Discord server. Edit these if your server uses different emoji IDs.
+
+| Constant | Used by |
+|----------|---------|
+| `RTB_TEMPLATE` | `rtb` status |
+| `ACTIVE_ALERT_TEMPLATE` | `active_alert` status — built from `_ACTIVE_ALERT_CORE` plus optional Nitro bookends controlled by `USE_NITRO_EMOJI` |
+| `SB_TEMPLATE` | `sb1`–`sb5` statuses (shared body) |
+| `SB_PREFIXES` | `sb1`–`sb5` statuses (per-variant prefix emoji) |
+| `STATUS_TEMPLATES` | Maps status names to their emoji strings — add new statuses here |
 
 ### Setting Your Name
 
@@ -63,12 +105,13 @@ It will then appear anywhere `{Name}` is used — `{Introduction}` phrases, `{LD
 
 ## Customization Files
 
-Messages are split across two files so your personal changes are never overwritten when you pull a repo update.
+Three files let you customize behaviour without touching `alerts.py`, and without risking your changes being overwritten on updates.
 
-| File | Purpose |
-|------|---------|
-| `Messages.py` | Ships with the repo. Contains all built-in `MESSAGE_CONSTRUCTORS` and `MESSAGE_VARIABLES`. **Do not edit** — it will be overwritten on updates. |
-| `CustomMessages.py` | Your personal overrides. Never touched by repo updates. Any key defined here takes precedence over the same key in `Messages.py`. |
+| File | Tracked by git | Purpose |
+|------|---------------|---------|
+| `Messages.py` | Yes | Ships with the repo. Contains all built-in `MESSAGE_CONSTRUCTORS` and `MESSAGE_VARIABLES`. **Do not edit** — it will be overwritten on updates. |
+| `CustomMessages.py` | No | Your personal message overrides. Never touched by repo updates. Any key defined here takes precedence over the same key in `Messages.py`. |
+| `Settings.py` | No | Your personal runtime settings and emoji templates. Never touched by repo updates. Edit this to set `OS_MODE`, `USE_NITRO_EMOJI`, and Discord emoji IDs. |
 
 ### How Overrides Work
 
@@ -239,11 +282,7 @@ When a status action runs, the script:
 
 This means the current input field is overwritten.
 
-#### Note
-
-Statuses and Timestamp actions function differently. Consider Timestamp actions supplemental, so the script will not overwrite `Ctrl+A/Ctrl+V` whatever is in the current text box if you solely use the Timestamp functionality.
-
-
+> **Note:** Statuses and Timestamp actions function differently. Consider Timestamp actions supplemental — the script will not `Ctrl+A` the current text box if you solely use the Timestamp functionality.
 
 ## Offset Format
 
@@ -290,7 +329,7 @@ When a timestamp action runs, the script:
 
 This means the timestamp is inserted at the cursor instead of replacing the field.
 
-## Custom Message Actions (`-M`)
+## Custom Message Actions
 
 The `-M` flag pastes a freeform message at the current cursor position (no `Ctrl+A`). The message is processed through constructor expansion and variable resolution before pasting.
 
@@ -329,15 +368,20 @@ After all tokens are resolved, the message is automatically cleaned up:
 
 ## Internal Function Overview
 
-### `_resolve_os()`
+### `_resolve_os`
+
+`_resolve_os() -> str`
 
 Determines which clipboard/input backend to use.
 
+- Reads `OS_MODE` from `Settings.py`.
 - If `OS_MODE` is `"linux"` or `"windows"`, returns that value immediately — `platform` is never imported.
 - If `OS_MODE` is `"auto"`, imports `platform` at call time and inspects `platform.system()`.
 - Raises `RuntimeError` for any unsupported OS detected under `"auto"` mode.
 
-### `_clipboard_paste(text, *, replace, send=False, delay=0.1)`
+### `_clipboard_paste`
+
+`_clipboard_paste(text, *, replace, send=False, delay=0.1) -> None`
 
 OS-aware clipboard dispatcher. Calls `_resolve_os()` and routes to the appropriate backend.
 
@@ -345,15 +389,21 @@ OS-aware clipboard dispatcher. Calls `_resolve_os()` and routes to the appropria
 - `replace=False` — pastes at the cursor without selecting anything (used by timestamp and custom message actions).
 - `send=True` — sends `Enter` after the paste, submitting the message immediately (enabled by the `-S` flag).
 
-#### `_clipboard_paste_linux(text, *, replace, send=False, delay=0.1)`
+#### `_clipboard_paste_linux`
+
+`_clipboard_paste_linux(text, *, replace, send=False, delay=0.1) -> None`
 
 Linux backend. Copies `text` to the Wayland clipboard via `wl-copy` and sends keystrokes via `ydotool`.
 
-#### `_clipboard_paste_windows(text, *, replace, send=False, delay=0.1)`
+#### `_clipboard_paste_windows`
+
+`_clipboard_paste_windows(text, *, replace, send=False, delay=0.1) -> None`
 
 Windows backend stub. Raises `NotImplementedError` until implemented. Planned: `win32clipboard` or `ctypes SetClipboardData` for the clipboard, `ctypes SendInput` or `pyautogui` for `Ctrl+A` / `Ctrl+V` / `Enter`.
 
-### `build_status(case_name)`
+### `build_status`
+
+`build_status(case_name) -> str`
 
 Builds the full output string for a named status action.
 
@@ -361,7 +411,9 @@ Builds the full output string for a named status action.
 - Appends that timestamp to the selected emoji template
 - Raises an error if the action name is unknown
 
-### `build_timestamp(offset_seconds=0)`
+### `build_timestamp`
+
+`build_timestamp(offset_seconds=0) -> str`
 
 Builds the Discord relative timestamp suffix.
 
@@ -369,7 +421,9 @@ Builds the Discord relative timestamp suffix.
 - Applies any provided offset in seconds
 - Returns a string in the format `<t:...:R>`
 
-### `build_timestamp_action(action)`
+### `build_timestamp_action`
+
+`build_timestamp_action(action) -> str | None`
 
 Parses timestamp commands.
 
@@ -378,7 +432,9 @@ Parses timestamp commands.
 - `timestamp-N` returns a past timestamp
 - Returns `None` if the action is not a timestamp action
 
-### `parse_offset_action(action, prefix)`
+### `parse_offset_action`
+
+`parse_offset_action(action, prefix) -> tuple[str, int] | None`
 
 Parses commands that allow an optional signed time offset.
 
@@ -387,7 +443,9 @@ Parses commands that allow an optional signed time offset.
 - Bare `+N` / `-N` with no unit is treated as minutes for backwards compatibility
 - Returns `None` when the action does not match the expected pattern
 
-### `resolve_message(text)`
+### `resolve_message`
+
+`resolve_message(text) -> str`
 
 Resolves a freeform `-M` message string.
 
@@ -398,7 +456,9 @@ Resolves a freeform `-M` message string.
 - Capitalizes the first letter after sentence-ending punctuation.
 - Appends a trailing period if the message has no closing punctuation.
 
-### `main()`
+### `main`
+
+`main() -> int`
 
 The CLI entry point.
 

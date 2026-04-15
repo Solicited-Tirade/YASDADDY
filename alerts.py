@@ -6,21 +6,12 @@ import random
 import subprocess
 from Messages import MESSAGE_CONSTRUCTORS as _base_constructors, MESSAGE_VARIABLES as _base_variables
 from CustomMessages import MESSAGE_CONSTRUCTORS as _custom_constructors, MESSAGE_VARIABLES as _custom_variables
+from Settings import OS_MODE, STATUS_TEMPLATES
 
 # Matches an offset like "4m30s", "4m", "30s", or a bare integer (legacy minutes).
 _OFFSET_RE = re.compile(r"^(?:(\d+)m)?(?:(\d+)s)?$")
 
 ###Initialization Components###
-
-# Controls which clipboard/input backend is used.
-# "auto"    — detect the OS at runtime (recommended for most users)
-# "linux"   — force Linux backend (wl-copy + ydotool), regardless of detected OS
-# "windows" — force Windows backend, regardless of detected OS (not yet implemented)
-# Set this manually if you prefer not to have the script inspect your system at runtime.
-OS_MODE: str = "auto"  # "auto" | "linux" | "windows"
-
-# IMPORTANT: Set to False to strip the animated Nitro-only emojis from ACTIVE_ALERT_TEMPLATE. If you do not have Nitro, this will not work well for you.
-USE_NITRO_EMOJI = True
 
 def _merge_variables(
     base: dict[str, str | list[str]],
@@ -57,67 +48,6 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = _merge_variables(_base_variables
 
 # Discord relative timestamp format, e.g. <t:1710000000:R>.
 TIMESTAMP_SUFFIX = "<t:{unix_time}:R>"
-
-# Emoji sequence for the "rtb" status.
-RTB_TEMPLATE = (
-    "<:RTB1:1182246669564256296>"
-    "<:RTB2:1182246670717689867>"
-    "<:RTB3:1182246674383507476>"
-    "<:RTB4:1182246677101412392>"
-    "<:RTB5:1182246678397464596>"
-    "<:RTB6:1182246679680929803>"
-    "<:RTB7:1182246686177894430>"
-    "<:RTB8:1182246689336213575>"
-)
-
-# Static (non-Nitro) core emoji sequence for the "active_alert" status.
-_ACTIVE_ALERT_CORE = (
-    "<:AA1:1182246601557823520>"
-    "<:AA2:1182246604401561610>"
-    "<:AA3:1182246605718556682>"
-    "<:AA4:1182246607228514304>"
-    "<:AA5:1182246610189692938>"
-    "<:AA6:1182246613150859304>"
-    "<:AA7:1182246614665019393>"
-    "<:AA8:1182246617559072838>"
-)
-
-# Animated Nitro-only bookend emojis that wrap the core sequence.
-_AA_NITRO_PREFIX = "<a:AlertBlue:1064652389711360043><a:AlertRed:985293780288700476>"
-_AA_NITRO_SUFFIX = "<a:AlertRed:985293780288700476><a:AlertBlue:1064652389711360043>"
-
-# Emoji sequence for the "active_alert" status.
-ACTIVE_ALERT_TEMPLATE = (
-    (_AA_NITRO_PREFIX if USE_NITRO_EMOJI else "")
-    + _ACTIVE_ALERT_CORE
-    + (_AA_NITRO_SUFFIX if USE_NITRO_EMOJI else "")
-)
-
-# Shared emoji sequence used by all "sb" variants.
-SB_TEMPLATE = (
-    "<:SB1:1182246721129025657>"
-    "<:SB2:1182246723981164665>"
-    "<:SB3:1182246726137036891>"
-    "<:SB4:1182246729844797440>"
-    "<:SB5:1182246731447021589>"
-    "<:SB6:1182246733946818620>"
-    "<:SB7:1182246735616155648>"
-)
-
-# Prefix emoji for each SB variant before the shared SB template.
-SB_PREFIXES = {
-    "sb1": "<:P1:1432823559364935852>",
-    "sb2": "<:P2:1432823555698982973>",
-    "sb3": "<:P3:1432823553186861109>",
-    "sb4": "<:P4:1432823550997299330>",
-    "sb5": "<:P5:1432823547902034010>",
-}
-
-# Full status templates that only need the timestamp appended.
-STATUS_TEMPLATES = {
-    "rtb": RTB_TEMPLATE,
-    "active_alert": ACTIVE_ALERT_TEMPLATE,
-}
 
 # Key sequence for Ctrl+A to replace the current field contents.
 SELECT_ALL_KEYS = ["ydotool", "key", "29:1", "30:1", "30:0", "29:0"]  # Ctrl+A
@@ -163,16 +93,12 @@ def build_status(case_name: str) -> str:
     # Every status ends with a relative timestamp for now, future, or past.
     timestamp = build_timestamp(offset_seconds)
 
-    # Direct status templates just append the timestamp.
+    # All status templates just append the timestamp.
     if base_name in STATUS_TEMPLATES:
         return STATUS_TEMPLATES[base_name] + timestamp
 
-    # SB statuses use a unique prefix plus the shared SB body and timestamp.
-    if base_name in SB_PREFIXES:
-        return SB_PREFIXES[base_name] + SB_TEMPLATE + timestamp
-
     # Show valid options when the user passes an unknown status action.
-    valid = sorted([*STATUS_TEMPLATES.keys(), *SB_PREFIXES.keys()])
+    valid = sorted(STATUS_TEMPLATES.keys())
     raise ValueError(
         f"Unknown status case: {case_name}. Valid cases: {', '.join(valid)}"
     )
@@ -180,7 +106,7 @@ def build_status(case_name: str) -> str:
 
 def parse_status_action(action: str) -> tuple[str, int]:
     # Try every known status name, allowing an optional +N or -N minute suffix.
-    for name in (*STATUS_TEMPLATES.keys(), *SB_PREFIXES.keys()):
+    for name in STATUS_TEMPLATES.keys():
         if parsed := parse_offset_action(action, name):
             return parsed
 
@@ -260,7 +186,7 @@ def _resolve_os() -> str:
         return "windows"
     raise RuntimeError(
         f"Unsupported OS detected: {platform.system()!r}. "
-        "Set OS_MODE to 'linux' or 'windows' manually."
+        "Set OS_MODE to 'linux' or 'windows' manually in Settings.py."
     )
 
 
@@ -283,7 +209,7 @@ def _clipboard_paste_windows(text: str, *, replace: bool, send: bool = False, de
     # and keypress automation (e.g. ctypes SendInput or pyautogui) for Ctrl+A / Ctrl+V / Enter.
     raise NotImplementedError(
         "Windows clipboard support is not yet implemented. "
-        "Set OS_MODE = 'linux' if you are on Linux."
+        "Set OS_MODE = 'linux' in Settings.py if you are on Linux."
     )
 
 
