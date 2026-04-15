@@ -118,7 +118,6 @@ MESSAGE_CONSTRUCTORS: dict[str, str] = {
 # The auto-formatter will capitalize the first letter and add a trailing period if needed.
 # List values are randomly selected each time; plain strings are always used as-is.
 MESSAGE_VARIABLES: dict[str, str | list[str]] = {
-    "Name": "YourName",  # set your name in CustomMessages.py: MESSAGE_VARIABLES = {"Name": "YourName"}
     "Greetings": [
         "Hey there",
         "Hello",
