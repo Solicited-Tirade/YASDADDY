@@ -12,6 +12,7 @@ Personally, I use this with a Stream Deck, but you can use whatever you want as 
 
 ## Table of Contents
 
+- [Before You Start](#before-you-start)
 - [What It Does](#what-it-does)
 - [Requirements](#requirements)
 - [Future Plans](#future-plans)
@@ -37,6 +38,20 @@ Personally, I use this with a Stream Deck, but you can use whatever you want as 
   - [`resolve_message`](#resolve_message)
   - [`main`](#main)
 - [Quick Reference](#quick-reference)
+
+---
+
+## Before You Start
+
+**Open `Settings.py` and configure it before running the script for the first time.**
+
+| Setting | What to do |
+|---------|------------|
+| `NAME` | Set this to your in-game name. It appears in greetings, introductions, and anywhere `{Name}` is used. |
+| `USE_NITRO_EMOJI` | Set to `False` if you do not have Discord Nitro. Leaving it `True` without Nitro will send broken animated emoji tags. |
+| `OS_MODE` | Leave as `"auto"` unless you want to force a specific backend or avoid runtime OS detection. |
+
+Everything else in `Settings.py` can be left at its default until you need it.
 
 ---
 
@@ -92,16 +107,13 @@ User-configurable settings live in `Settings.py`. Edit this file to match your s
 
 ### Setting Your Name
 
-Your name is not configured directly in `alerts.py`. Set it in `CustomMessages.py` so it survives updates:
+Set `NAME` in `Settings.py`:
 
 ```python
-# CustomMessages.py
-MESSAGE_VARIABLES: dict[str, str | list[str]] = {
-    "Name": "YourName",
-}
+NAME: str = "YourName"
 ```
 
-It will then appear anywhere `{Name}` is used — `{Introduction}` phrases, `{LDispatchGreeting}`, and any constructor or `-M` string you write.
+It will appear anywhere `{Name}` is used — `{Introduction}` phrases, `{LDispatchGreeting}`, and any constructor or `-M` string you write.
 
 ## Customization Files
 

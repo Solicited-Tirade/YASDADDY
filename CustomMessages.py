@@ -6,9 +6,6 @@
 #   2. Only list keys you want to change — everything else falls back to Messages.py.
 #   3. Run: python alerts.py -M "{VariableName}" to use a constructor or message variable.
 #
-# SET YOUR NAME:
-#   Edit the "Name" variable to your in-game name. Keep it in quotes. It will appear anywhere {Name} is used,
-#   including Introduction phrases and the LDispatchGreeting constructor.
 #
 # VARIABLE MODIFIERS and overrides (list variables only):
 #   "Key"   — fully replace the base list with your own. For example, if you redefine {Greetings}, the original greetings are discarded and only your phrases are used.
@@ -30,9 +27,6 @@ MESSAGE_CONSTRUCTORS: dict[str, str] = {
 }
 
 MESSAGE_VARIABLES: dict[str, str | list[str]] = {
-    # Your name — appears in {Introduction}, {LDispatchGreeting}, and anywhere {Name} is used.
-    "Name": "ChangeYourNameHere",
-
     # Add phrases to an existing variable (base phrases are kept):
     # "+Greetings": ["Howdy", "What's up"],
 

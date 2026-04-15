@@ -1,7 +1,13 @@
-# User-configurable settings for YASDADDY.
-# This file will NOT be overwritten by repository updates.
+# ============================================================
+# CONFIGURE THIS FILE BEFORE YOUR FIRST RUN
 #
-# Edit the values below to match your setup.
+#   1. Set NAME to your in-game name.
+#   2. Set USE_NITRO_EMOJI to False if you do not have Discord Nitro.
+#   3. Set OS_MODE if you prefer not to use auto-detection.
+#
+# Everything else can be left at its default.
+# This file will NOT be overwritten by repository updates.
+# ============================================================
 
 ###############################################################################
 # USER SETTINGS
@@ -14,6 +20,9 @@
 # "windows" — force Windows backend, regardless of detected OS (not yet implemented)
 # Set this manually if you prefer not to have the script inspect your system at runtime.
 OS_MODE: str = "auto"  # "auto" | "linux" | "windows"
+
+# Your in-game name. Appears in {Introduction} phrases, {LDispatchGreeting}, and anywhere {Name} is used.
+NAME: str = "YourName"
 
 # IMPORTANT: Set to False to strip the animated Nitro-only emojis from the active_alert status.
 # If you do not have Discord Nitro, set this to False.

@@ -6,7 +6,7 @@ import random
 import subprocess
 from Messages import MESSAGE_CONSTRUCTORS as _base_constructors, MESSAGE_VARIABLES as _base_variables
 from CustomMessages import MESSAGE_CONSTRUCTORS as _custom_constructors, MESSAGE_VARIABLES as _custom_variables
-from Settings import OS_MODE, STATUS_TEMPLATES
+from Settings import OS_MODE, NAME, STATUS_TEMPLATES
 
 # Matches an offset like "4m30s", "4m", "30s", or a bare integer (legacy minutes).
 _OFFSET_RE = re.compile(r"^(?:(\d+)m)?(?:(\d+)s)?$")
@@ -44,6 +44,7 @@ def _merge_variables(
 # individual phrases without replacing the full list — see CustomMessages.py.
 MESSAGE_CONSTRUCTORS: dict[str, str] = {**_base_constructors, **_custom_constructors}
 MESSAGE_VARIABLES: dict[str, str | list[str]] = _merge_variables(_base_variables, _custom_variables)
+MESSAGE_VARIABLES["Name"] = NAME
 
 
 # Discord relative timestamp format, e.g. <t:1710000000:R>.
