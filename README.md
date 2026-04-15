@@ -20,7 +20,7 @@ The script currently supports three kinds of actions:
    These build only the Discord relative timestamp suffix and paste it at the current cursor position without `Ctrl+A`.
 
 3. Custom message actions (`-M`)
-   These paste a freeform message at the current cursor position. The message can contain `{Variable}` tokens and `{ConstructorName}` shorthands that are resolved before pasting.
+   These paste a freeform message at the current cursor position. The message can contain `{Variable}` tokens and `{ConstructorName}` shorthands that are resolved before pasting. This is the core of the personalization system — build messages that reflect your own style, tone, and workflow rather than sending the same text every time.
 
 ## Requirements
 
@@ -47,36 +47,32 @@ Future plans include adding small API functionality, or OCR to determine who the
 
 ### Message Constructors
 
-Constructors are named shorthands that expand into a full template string. Use `{ConstructorName}` inside your `-M` string to expand one.
+Constructors are named shorthands that expand into a full template string. Use `{ConstructorName}` inside your `-M` string to expand one. They are your personal toolkit — build out exactly the messages you want to send, composed from whatever variables and fixed text fit your style. A constructor can be as simple or as elaborate as you like, and you can add as many as you need.
 
 ```python
 MESSAGE_CONSTRUCTORS: dict[str, str] = {
-    # Greeting openers
     "FullGreetingQuestionnaire": "{Greetings}, {Introduction}, {Pleasantries}. {Questionnaire}?",
-    "FullGreetingStranded":      "{Greetings}, {Introduction}. I see that you are stranded in space. Can you provide me with your oxygen and thirst levels?",
-    "FullGreetingMoreInfo":      "{Greetings}, {Introduction}, {Pleasantries}. {Moreinfo}",
-    "GreetingQUpdate":           "{Greetings}, {Introduction}. {QUpdate}",
-
-    # Thank → follow-up
-    "ThanksMoreInfo":    "{Thanks}, {Moreinfo}",
-    "ThanksUpdate":      "{Thanks}. {AUpdate}",
-    "ThanksWaitQUpdate": "{ThanksWait}. {QUpdate}",
-    "ThanksWaitMoreInfo":"{ThanksWait}. {Moreinfo}",
-
-    # Apology → follow-up
-    "ApologyWaitQUpdate":           "{ApologiesWait}. {QUpdate}",
-    "ApologyWaitUpdate":            "{ApologiesWait}. {AUpdate}",
-    "ApologyInconvenienceMoreInfo": "{ApologiesInconvenience}. {Moreinfo}",
-    "ApologyFrustrationMoreInfo":   "{ApologiesFrustration}. {Moreinfo}",
-    "ApologyConfusionMoreInfo":     "{ApologiesConfusion}. {Moreinfo}",
-
-    # Vitals checks
-    "VitalsCheck":                  "{OxygenLevel}? {ThirstHunger}?",
-    "VitalsRadiationCheck":         "{OxygenLevel}? {ThirstHunger}? {Radiation}?",
-    "GreetingVitalsCheck":          "{Greetings}, {Introduction}. {OxygenLevel}? {ThirstHunger}?",
-    "GreetingVitalsRadiationCheck": "{Greetings}, {Introduction}. {OxygenLevel}? {ThirstHunger}? {Radiation}?",
+    "DispatchGreeting":          "{Greetings}! {Introduction}, and {StandingBy}. {SendingInvites}...",
+    "EnRoute":                   "{AUpdate}! {TeamEnRoute}. {ArrivalNotice}.",
+    "CloseSuccess":              "{ThanksWait}! As we conclude our service...",
+    # ... see MESSAGE_CONSTRUCTORS in alerts.py for the full list
 }
 ```
+
+Constructors are grouped in `alerts.py` as follows:
+
+- **Greeting openers** — `FullGreetingQuestionnaire`, `FullGreetingStranded`, `FullGreetingMoreInfo`, `GreetingQUpdate`
+- **Thank → follow-up** — `ThanksMoreInfo`, `ThanksUpdate`, `ThanksWaitQUpdate`, `ThanksWaitMoreInfo`
+- **Apology → follow-up** — `ApologyWaitQUpdate`, `ApologyWaitUpdate`, `ApologyInconvenienceMoreInfo`, `ApologyFrustrationMoreInfo`, `ApologyConfusionMoreInfo`
+- **Vitals checks** — `VitalsCheck`, `VitalsRadiationCheck`, `GreetingVitalsCheck`, `GreetingVitalsRadiationCheck`
+- **Legacy canned responses** (`L` prefix) — verbatim originals for every stage of the normal alert workflow
+- **Flair canned responses** — similar to the above, but with `{Variable}` tokens for randomized phrasing, and added flair
+
+#### Legacy vs. Flair
+
+Not every constructor needs to use variables. Sometimes you already have a set of phrases you're comfortable with and want them sent exactly as written — no randomness, no surprises. The `L`-prefixed constructors exist for that reason: they are static, predictable, and unchanged from the original wording.
+
+The flair versions of those same constructors inject `{Variable}` tokens to vary the phrasing on each use. Both are valid — which you reach for is a matter of preference and situation.
 
 Constructor values may themselves contain `{VarName}` tokens — they are resolved in the normal variable pass after expansion.
 
@@ -84,16 +80,18 @@ Constructor values may themselves contain `{VarName}` tokens — they are resolv
 
 ### Message Variables
 
-Variables are resolved after constructors. List values are randomly chosen on each run; plain strings are always used verbatim.
+Variables are resolved after constructors. List values are randomly chosen on each run; plain strings are always used verbatim. They are the building blocks of the personalization system — swap in your own phrases, adjust the tone, and tailor the wording to your personality. Adding more options to a list increases variety without requiring any changes to your constructors.
 
 ```python
 MESSAGE_VARIABLES: dict[str, str | list[str]] = {
+    # Identity
+    "Name":                   NAME,  # plain string, always resolves to the configured NAME
     # General
     "Greetings":              ["Hey there", "Hello", "Hi", ...],
     "Introduction":           [f"my name is {NAME}", f"I'm {NAME}", ...],
     "Pleasantries":           ["I hope you're having a great day", ...],
     "Questionnaire":          ["please take a moment to fill out the questionnaire", ...],
-    "QUpdate":                ["can you provide me with an update while we wait for a team leader", ...],
+    "QUpdate":                ["can you provide me with an update", ...],
     "Moreinfo":               ["could you provide me with some more information", ...],
     "AUpdate":                ["good news, I have an update for you", ...],
     # Acknowledgements
@@ -108,6 +106,19 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = {
     "OxygenLevel":            ["what are your current oxygen levels", ...],
     "Radiation":              ["are you currently in a radiation zone", ...],
     "ThirstHunger":           ["what are your current thirst and hunger levels", ...],
+    # Medrunner operational phrases
+    "ServiceWelcome":         ["thank you for choosing Medrunner Services", "welcome to Medrunner Services", ...],
+    "Received":               ["we've received your alert", "your alert has been received", ...],
+    "Assurances":             ["no need to worry", "you're in good hands", "help is on the way", ...],
+    "StandingBy":             ["I'll be your dispatcher for this alert", "I'm handling your dispatch today", ...],
+    "SendingInvites":         ["the team leader will be sending you a friend request and/or party invite", ...],
+    "ReadyForInvites":        ["please let me know when you are ready to receive the invites", ...],
+    "SpamAcceptKey":          ["please spam the accept key", "mash that accept key", ...],
+    "TeamEnRoute":            ["our team is en route", "the team is headed your way", ...],
+    "ArrivalNotice":          ["I will update you when we are shortly arriving", "I'll keep you posted as we get close", ...],
+    "SecuringArea":           ["please be patient while we secure the area", "hold tight while we handle the area", ...],
+    "NoContactClose":         ["if we haven't heard from you within the next 5 minutes...", ...],
+    "StandingDown":           ["standing down due to no contact", "closing this alert due to no response", ...],
 }
 ```
 

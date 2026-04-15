@@ -51,6 +51,78 @@ MESSAGE_CONSTRUCTORS: dict[str, str] = {
     "VitalsRadiationCheck":         "{OxygenLevel}? {ThirstHunger}? {Radiation}?",
     "GreetingVitalsCheck":          "{Greetings}, {Introduction}. {OxygenLevel}? {ThirstHunger}?",
     "GreetingVitalsRadiationCheck": "{Greetings}, {Introduction}. {OxygenLevel}? {ThirstHunger}? {Radiation}?",
+
+    # --- Legacy Medrunner canned responses (L-prefix = verbatim originals) ---
+
+    # Opening / intake
+    "LWelcomeQuestionnaire":       "Thank you for choosing Medrunner Services!\n\nOnce the Questionnaire has been submitted we can proceed.",
+    "LQuestionnaireReminder":      "Could you please fill in the Questionnaire?\nIf you have already, be sure to press submit for I don't see them.",
+    "LDispatchGreeting":           "Hello! My name is {Name}, and I'll be leading the team dispatched to your location.\n\nI will be sending you a friend request and/or party invite.\n(To accept the invite, make sure you're in first-person view and spam the key to the right of P — typically the [ key - though it may vary depending on your keyboard layout.)\n\nPlease confirm here when you are ready to receive the invites!",
+    "LNoTeamsAvailable":           "Thank you for choosing Medrunner Services!\n\nWe've received your alert — no need to worry. All active teams are currently deployed, but one will be assigned to you shortly.\nIn the meantime, if you haven't already, please complete and submit the questionnaire.\n\nThank you for your patience!",
+    "LInviteConfirmationReminder": "Please let me know when you are ready to receive the invites!",
+
+    # No contact
+    "LNoContactWarning":   "Just as fair warning, if we haven't heard from you within the next 5 minutes, we will hope all is well and close this alert.",
+    "LNoContactStanddown": "Standing down due to no contact. You're welcome to resubmit, but please know that you will need to be ready to accept friend and party invites and answer the questions in order for us to respond.",
+
+    # Friend request issues
+    "LFriendRequestCheckKey": "Hmm it was not accepted, is your default accept key the Left Bracket [ ?",
+    "LFriendRequestBugged":   "The Friend Request has bugged, this is a known problem.\nPlease can you navigate to https://robertsspaceindustries.com/spectrum to accept the Friend Request.\n\nPlease confirm here once you have accepted it.",
+
+    # Invites & joining
+    "LFriendRequestSent":   "Friend Request sent, please spam the accept key!",
+    "LPartyInviteSent":     "Party Invite sent, please spam the accept key!",
+    "LJoiningServer":       "Perfect! Our Team is joining your Server now. I will notify you when we are en route.",
+    "LJoiningServerFull":   "Perfect! Our Team is joining your Server now. I will notify you when we are en route.\nDo note your server is full, there may be a short delay. I apologize for this in advance.",
+    "LLoadingInForFriends": "I will get your friend(s) in the party as well. Please provide me a moment to load into the server.",
+
+    # Deploying
+    "LCanInviteFriends": "I can now invite your friend(s) to the party. Please confirm here when they are ready to accept.",
+    "LNoPartyMarker":    "We sadly do not have your party marker.\n\nCould you please open up your console, type r_displayinfo 2, close the console, and send me a screenshot of your screen with the info at the top right visible?\n\nUpload it to https://imgur.com/upload and drop the link here.",
+    "LDeployMoreInfo":   "To help ensure we provide an efficient service, please answer the following 2 questions:\n\n1) Will you be needing to use our Medical Bed?\n2) Will you be needing an Extraction to the Closest Station?",
+    "LEnRoute":          "Our Team is en route. I will update you when we are shortly arriving.",
+    "LShortlyArriving":  "Depending on the situation, we may not pick you up immediately. Please be patient while we secure the area.\n\nWe will reach you soon. Switching over to in-game party chat now.\nNote: If you are downed, it will be harder to read until you are revived.",
+
+    # Closing
+    "LCloseSuccess": "As we conclude our service, we'd like to sincerely thank you for trusting us. We hope today's response was prompt, professional, and met your expectations. Your health and satisfaction are our top priorities, and we hope to assist you again in the future if needed.\n\nIf you have a moment, we'd greatly appreciate it if you could leave a rating and comment on the alert card to let us know how we did today!",
+    "LCloseFailure": "As we conclude our service, we'd like to sincerely thank you for trusting us. We're sorry that we were unable to rescue you this time. Your health and satisfaction are our top priorities, and we hope that we will be able to assist you in the future if needed.\n\nIf you have a moment, we'd greatly appreciate it if you could leave a rating and comment on the alert card to let us know how we handled your case today!",
+    "LCloseNeutral": "As we conclude our service, we'd like to sincerely thank you for trusting us. We're sorry that we were unable to rescue you this time. Your health and satisfaction are our top priorities, and we hope that we will be able to assist you in the future if needed.\n\nUntil then, we wish you safe travels in the 'Verse.",
+
+    # --- Medrunner canned responses with variable flair ---
+
+    # Opening / intake
+    "WelcomeQuestionnaire":       "{ServiceWelcome}!\n\n{Questionnaire}.",
+    "QuestionnaireReminder":      "{Questionnaire}?\nIf you have already, be sure to press submit for I don't see them.",
+    "DispatchGreeting":           "{Greetings}! {Introduction}, and {StandingBy}.\n\n{SendingInvites}.\n(To accept the invite, make sure you're in first-person view and spam the key to the right of P — typically the [ key - though it may vary depending on your keyboard layout.)\n\n{ReadyForInvites}!",
+    "NoTeamsAvailable":           "{ServiceWelcome}!\n\n{Received} — {Assurances}. All active teams are currently deployed, but one will be assigned to you shortly.\nIn the meantime, if you haven't already, please complete and submit the questionnaire.\n\n{ThanksWait}!",
+    "InviteConfirmationReminder": "{ThanksWait}! {ReadyForInvites}.",
+
+    # No contact
+    "NoContactWarning":   "{ThanksWait}. Just as fair warning, {NoContactClose}.",
+    "NoContactStanddown": "{ApologiesInconvenience}. {StandingDown}. You're welcome to resubmit, but please know that you will need to be ready to accept friend and party invites and answer the questions in order for us to respond.",
+
+    # Friend request issues
+    "FriendRequestCheckKey": "{ApologiesInconvenience}. It was not accepted — is your default accept key the Left Bracket [ ?",
+    "FriendRequestBugged":   "{ApologiesInconvenience}. The Friend Request has bugged, this is a known problem.\nPlease can you navigate to https://robertsspaceindustries.com/spectrum to accept the Friend Request.\n\nPlease confirm here once you have accepted it.",
+
+    # Invites & joining
+    "FriendRequestSent":   "{AUpdate}! A Friend Request has been sent — {SpamAcceptKey}!",
+    "PartyInviteSent":     "{AUpdate}! A Party Invite has been sent — {SpamAcceptKey}!",
+    "JoiningServer":       "{AUpdate}! Our Team is joining your Server now. {ArrivalNotice}.",
+    "JoiningServerFull":   "{AUpdate}! Our Team is joining your Server now. {ArrivalNotice}.\nDo note your server is full, there may be a short delay. {ApologiesWait}.",
+    "LoadingInForFriends": "{ThanksWait}! I will get your friend(s) in the party as well. Please give me a moment to load into the server.",
+
+    # Deploying
+    "CanInviteFriends": "{AUpdate}! I can now invite your friend(s) to the party. Please confirm here when they are ready to accept.",
+    "NoPartyMarker":    "{ApologiesInconvenience}. We do not have your party marker.\n\nCould you please open up your console, type r_displayinfo 2, close the console, and send me a screenshot of your screen with the info at the top right visible?\n\nUpload it to https://imgur.com/upload and drop the link here.",
+    "DeployMoreInfo":   "{Moreinfo}. To help ensure we provide an efficient service, please answer the following 2 questions:\n\n1) Will you be needing to use our Medical Bed?\n2) Will you be needing an Extraction to the Closest Station?",
+    "EnRoute":          "{AUpdate}! {TeamEnRoute}. {ArrivalNotice}.",
+    "ShortlyArriving":  "{AUpdate}! Depending on the situation, we may not pick you up immediately. {SecuringArea}.\n\nWe will reach you soon. Switching over to in-game party chat now.\nNote: If you are downed, it will be harder to read until you are revived.",
+
+    # Closing
+    "CloseSuccess": "{ThanksWait}! As we conclude our service, we'd like to sincerely thank you for trusting us. We hope today's response was prompt, professional, and met your expectations. Your health and satisfaction are our top priorities, and we hope to assist you again in the future if needed.\n\nIf you have a moment, we'd greatly appreciate it if you could leave a rating and comment on the alert card to let us know how we did today!",
+    "CloseFailure": "{ApologiesFrustration}. As we conclude our service, we'd like to sincerely thank you for trusting us. We're sorry that we were unable to rescue you this time. Your health and satisfaction are our top priorities, and we hope that we will be able to assist you in the future if needed.\n\nIf you have a moment, we'd greatly appreciate it if you could leave a rating and comment on the alert card to let us know how we handled your case today!",
+    "CloseNeutral": "{ApologiesInconvenience}. As we conclude our service, we'd like to sincerely thank you for trusting us. We're sorry that we were unable to rescue you this time. Your health and satisfaction are our top priorities, and we hope that we will be able to assist you in the future if needed.\n\nUntil then, we wish you safe travels in the 'Verse.",
 }
 
 # Variables used in custom messages via the -M flag.
@@ -63,6 +135,7 @@ MESSAGE_CONSTRUCTORS: dict[str, str] = {
 # The auto-formatter will capitalize the first letter and add a trailing period if needed.
 # List values are randomly selected each time; plain strings are always used as-is.
 MESSAGE_VARIABLES: dict[str, str | list[str]] = {
+    "Name": NAME,  # plain string — always resolves to the configured NAME
     "Greetings": [
         "Hey there",
         "Hello",
@@ -171,6 +244,83 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = {
         "how are your thirst and hunger levels looking",
         "could you share your thirst and hunger levels with me",
         "what are your hunger and thirst levels sitting at right now",
+    ],
+    # Medrunner operational phrases
+    "ServiceWelcome": [
+        "thank you for choosing Medrunner Services",
+        "thanks for reaching out to Medrunner",
+        "welcome to Medrunner Services",
+        "thank you for contacting Medrunner",
+        "glad you reached out to Medrunner Services",
+    ],
+    "Received": [
+        "we've received your alert",
+        "your alert has been received",
+        "we've got your alert",
+        "we have your alert",
+    ],
+    "Assurances": [
+        "no need to worry",
+        "you're in good hands",
+        "help is on the way",
+        "we've got you covered",
+        "rest assured, we're on it",
+        "you're in safe hands",
+    ],
+    "StandingBy": [
+        "I'll be your dispatcher for this alert",
+        "I'm handling your dispatch today",
+        "I'll be coordinating your rescue",
+    ],
+    "SendingInvites": [
+        "the team leader will be sending you a friend request and/or party invite",
+        "your team leader will reach out via friend request and party invite",
+        "expect a friend request and party invite from the team leader shortly",
+        "the team leader will send you a friend request followed by a party invite",
+    ],
+    "ReadyForInvites": [
+        "please let me know when you are ready to receive the invites",
+        "let me know when you're ready for the invites",
+        "give me the go-ahead when you're ready for the invites",
+        "confirm here once you're ready to receive the invites",
+        "just say the word when you're ready for the invites",
+    ],
+    "SpamAcceptKey": [
+        "please spam the accept key",
+        "keep tapping the accept key until it goes through",
+        "spam your accept key to accept",
+        "hit the accept key repeatedly until it goes through",
+        "mash that accept key",
+    ],
+    "TeamEnRoute": [
+        "our team is en route",
+        "our team is on their way to you",
+        "the team is headed your way",
+        "we're on our way to your location",
+    ],
+    "ArrivalNotice": [
+        "I will update you when we are shortly arriving",
+        "I'll keep you posted as we get close",
+        "I'll update you once we're nearly there",
+        "expect an update from me as we approach your location",
+    ],
+    "SecuringArea": [
+        "please be patient while we secure the area",
+        "give us a moment to secure the situation",
+        "hold tight while we handle the area",
+        "please bear with us as we work to secure the area",
+    ],
+    "NoContactClose": [
+        "if we haven't heard from you within the next 5 minutes, we will hope all is well and close this alert",
+        "if there's no response in the next 5 minutes, we'll assume all is well and stand down",
+        "should we not hear back within 5 minutes, we'll close this alert and hope you're safe",
+        "if we don't receive a response in the next 5 minutes, we'll go ahead and close the alert",
+    ],
+    "StandingDown": [
+        "standing down due to no contact",
+        "closing this alert due to no response",
+        "we're standing down as we were unable to reach you",
+        "standing down — we were unable to make contact",
     ],
 }
 
