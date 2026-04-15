@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 *.pyo
+
+# Personal overrides — never commit user customizations
+CustomMessages.py
