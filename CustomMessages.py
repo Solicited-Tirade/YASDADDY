@@ -24,6 +24,7 @@ MESSAGE_CONSTRUCTORS: dict[str, str] = {
 
     # Add a brand-new constructor:
     # "MyCustomGreeting": "{Greetings}, {Introduction}. {Pleasantries}.",
+    # "AnotherCustomGreeting": "{Greetings}, and thanks for your message. {Introduction}. {Pleasantries}. We will be with you shortly.",
 }
 
 MESSAGE_VARIABLES: dict[str, str | list[str]] = {

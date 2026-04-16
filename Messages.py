@@ -9,10 +9,11 @@
 # OR include your own closing punctuation (e.g. "?") directly in the template string.
 
 MESSAGE_CONSTRUCTORS: dict[str, str] = {
-    #Some basic constructors to get you started, but feel free to customize these as much as you'd like! You can also add more constructors for different scenarios.
+    #Some basic constructors to get you started, but feel free to customize these as much as you'd like inside of the CustomMessages.py file! You can also add more constructors for different scenarios.
     # Greeting openers
     "FullGreetingQuestionnaire": "{Greetings}, {Introduction}, {Pleasantries}. {Questionnaire}.",
-    "FullGreetingStranded": "{Greetings}, {Introduction}. I see that you are stranded in space. Can you provide me with your oxygen and thirst levels?",
+    "FullGreetingStranded": "{Greetings}, {Introduction}. I see that you are stranded in space. {SpaceVitalsCheck}?",
+    "FullGreetingStrandedRadiation": "{Greetings}, {Introduction}. I see that you are stranded in space. {SpaceVitalsRadiationCheck}?",
     "FullGreetingMoreInfo": "{Greetings}, {Introduction}, {Pleasantries}. {Moreinfo}",
     "GreetingQUpdate": "{Greetings}, {Introduction}. {QUpdate}",
 
@@ -30,10 +31,10 @@ MESSAGE_CONSTRUCTORS: dict[str, str] = {
     "ApologyConfusionMoreInfo": "{ApologiesConfusion}. {Moreinfo}",
 
     # Vitals checks
-    "VitalsCheck":                  "{OxygenLevel}? {ThirstHunger}?",
-    "VitalsRadiationCheck":         "{OxygenLevel}? {ThirstHunger}? {Radiation}?",
-    "GreetingVitalsCheck":          "{Greetings}, {Introduction}. {OxygenLevel}? {ThirstHunger}?",
-    "GreetingVitalsRadiationCheck": "{Greetings}, {Introduction}. {OxygenLevel}? {ThirstHunger}? {Radiation}?",
+    "VitalsRadiationCheck":          "{ThirstHunger}? {Radiation}?",
+    "SpaceVitalsCheck":              "{OxygenLevel}? {ThirstHunger}?",
+    "SpaceVitalsRadiationCheck":     "{OxygenLevel}? {ThirstHunger}? {Radiation}?",
+
 
     # --- Legacy Medrunner canned responses (L-prefix = verbatim originals) ---
 
@@ -313,10 +314,17 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = {
         "we're standing down as we were unable to reach you",
         "standing down — we were unable to make contact",
     ],
+    "ContactAgain": [
+        "don't hesitate to reach out if you ever need us again",
+        "feel free to contact us again anytime you need assistance",
+        "we're always here if you need us again",
+        "should you ever need our services again, don't hesitate to get in touch",
+        "if you ever find yourself in need again, we're just an alert away",
+        "remember, we're always available if you need us again",
+    ],
     "Signoff": [
         "stay safe out there",
         "fly safe",
-        "we've got your back",
         "safe travels in the 'Verse",
     ],
 }
