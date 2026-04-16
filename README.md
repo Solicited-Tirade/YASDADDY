@@ -28,7 +28,6 @@ The script currently supports three kinds of actions:
 - [Future Plans](#future-plans)
 - [Configuration](#configuration)
   - [Emoji Templates](#emoji-templates)
-  - [Setting Your Name](#setting-your-name)
 - [Customization Files](#customization-files)
   - [How Overrides Work](#how-overrides-work)
   - [Message Constructors](#message-constructors)
@@ -86,6 +85,7 @@ User-configurable settings live in `Settings.py`. Edit this file to match your s
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `NAME` | `"YourName"` | Your name — appears anywhere `{Name}` is used: `{Introduction}` phrases, `{LLeaderGreeting}`, and any constructor or `-M` string you write. |
 | `OS_MODE` | `"auto"` | Controls which clipboard/input backend is used. `"auto"` detects the OS at runtime via `platform.system()`. `"linux"` or `"windows"` forces a specific backend regardless of detection. Set manually for a more privacy-focused approach — auto-detection never runs. |
 | `USE_NITRO_EMOJI` | `True` | Include animated Nitro-only emojis in `active_alert`. Set to `False` if you don't have Discord Nitro. |
 
@@ -100,16 +100,6 @@ User-configurable settings live in `Settings.py`. Edit this file to match your s
 | `SB_TEMPLATE` | `sb1`–`sb5` statuses (shared body) |
 | `SB_PREFIXES` | `sb1`–`sb5` statuses (per-variant prefix emoji) |
 | `STATUS_TEMPLATES` | Maps status names to their emoji strings — add new statuses here |
-
-### Setting Your Name
-
-Set `NAME` in `Settings.py`:
-
-```python
-NAME: str = "YourName"
-```
-
-It will appear anywhere `{Name}` is used — `{Introduction}` phrases, `{LLeaderGreeting}`, and any constructor or `-M` string you write.
 
 ## Customization Files
 
