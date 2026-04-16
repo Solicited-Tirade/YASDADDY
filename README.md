@@ -30,8 +30,8 @@ The script currently supports three kinds of actions:
   - [Emoji Templates](#emoji-templates)
 - [Customization Files](#customization-files)
   - [How Overrides Work](#how-overrides-work)
-  - [Message Constructors](#message-constructors)
   - [Message Variables](#message-variables)
+  - [Message Constructors](#message-constructors)
 - [Usage](#usage)
 - [Supported Status Actions](#supported-status-actions)
 - [Offset Format](#offset-format)
@@ -46,7 +46,7 @@ The script currently supports three kinds of actions:
   - [`parse_offset_action`](#parse_offset_action)
   - [`resolve_message`](#resolve_message)
   - [`main`](#main)
-- [Quick Reference](#quick-reference)
+- [Quick Reference](#quick-reference-examples)
 
 ---
 
@@ -156,43 +156,9 @@ MESSAGE_CONSTRUCTORS: dict[str, str] = {
 }
 ```
 
-### Message Constructors
-
-Constructors are named shorthands that expand into a full template string. Use `{ConstructorName}` inside your `-M` string to expand one. They are your personal toolkit — build out exactly the messages you want to send, composed from whatever variables and fixed text fit your style. A constructor can be as simple or as elaborate as you like, and you can add as many as you need.
-
-```python
-# Messages.py (built-in)
-MESSAGE_CONSTRUCTORS: dict[str, str] = {
-    "FullGreetingQuestionnaire": "{Greetings}, {Introduction}, {Pleasantries}. {Questionnaire}?",
-    "DispatchGreeting":          "{Greetings}! {Introduction}, and {StandingBy}. {SendingInvites}...",
-    "EnRoute":                   "{AUpdate}! {TeamEnRoute}. {ArrivalNotice}.",
-    "CloseSuccess":              "{ThanksWait}! As we conclude our service...",
-    # ... see Messages.py for the full list
-}
-```
-
-Constructors are grouped in `Messages.py` as follows:
-
-- **Greeting openers** — `FullGreetingQuestionnaire`, `FullGreetingStranded`, `FullGreetingMoreInfo`, `GreetingQUpdate`
-- **Thank → follow-up** — `ThanksMoreInfo`, `ThanksUpdate`, `ThanksWaitQUpdate`, `ThanksWaitMoreInfo`
-- **Apology → follow-up** — `ApologyWaitQUpdate`, `ApologyWaitUpdate`, `ApologyInconvenienceMoreInfo`, `ApologyFrustrationMoreInfo`, `ApologyConfusionMoreInfo`
-- **Vitals checks** — `VitalsCheck`, `VitalsRadiationCheck`, `GreetingVitalsCheck`, `GreetingVitalsRadiationCheck`
-- **Legacy canned responses** (`L` prefix) — verbatim originals for every stage of the normal alert workflow
-- **Flair canned responses** — similar to the above, but with `{Variable}` tokens for randomized phrasing, and added flair
-
-#### Legacy vs. Flair
-
-Not every constructor needs to use variables. Sometimes you already have a set of phrases you're comfortable with and want them sent exactly as written — no randomness, no surprises. The `L`-prefixed constructors exist for that reason: they are static, predictable, and unchanged from the original wording.
-
-The flair versions of those same constructors inject `{Variable}` tokens to vary the phrasing on each use. Both are valid — which you reach for is a matter of preference and situation.
-
-Constructor values may themselves contain `{VarName}` tokens — they are resolved in the normal variable pass after expansion.
-
-> **Note:** Do not end constructor templates with punctuation. Let the auto-formatter handle it, or include your own closing punctuation (e.g. `?`) directly in the template string.
-
 ### Message Variables
 
-Variables are resolved after constructors. List values are randomly chosen on each run; plain strings are always used verbatim. They are the building blocks of the personalization system — swap in your own phrases, adjust the tone, and tailor the wording to your personality. Adding more options to a list increases variety without requiring any changes to your constructors.
+Variables are the building blocks of the personalization system — swap in your own phrases, adjust the tone, and tailor the wording to your personality. Adding more options to a list increases variety without requiring any changes to your [constructors](#message-constructors). List values are randomly chosen on each run; plain strings are always used verbatim. They are resolved after constructors.
 
 ```python
 # Messages.py (built-in defaults)
@@ -236,6 +202,40 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = {
 ```
 
 > **Note:** Do not end variable values with punctuation. Punctuation and spacing belong in your `-M` template string or constructor. The auto-formatter will capitalize the first letter and add a trailing period if needed.
+
+### Message Constructors
+
+Constructors are named shorthands that expand into a full template string. Use `{ConstructorName}` inside your `-M` string to expand one. They are your personal toolkit — build out exactly the messages you want to send, composed from whatever variables and fixed text fit your style. A constructor can be as simple or as elaborate as you like, and you can add as many as you need.
+
+```python
+# Messages.py (built-in)
+MESSAGE_CONSTRUCTORS: dict[str, str] = {
+    "FullGreetingQuestionnaire": "{Greetings}, {Introduction}, {Pleasantries}. {Questionnaire}?",
+    "DispatchGreeting":          "{Greetings}! {Introduction}, and {StandingBy}. {SendingInvites}...",
+    "EnRoute":                   "{AUpdate}! {TeamEnRoute}. {ArrivalNotice}.",
+    "CloseSuccess":              "{ThanksWait}! As we conclude our service...",
+    # ... see Messages.py for the full list
+}
+```
+
+Constructors are grouped in `Messages.py` as follows:
+
+- **Greeting openers** — `FullGreetingQuestionnaire`, `FullGreetingStranded`, `FullGreetingMoreInfo`, `GreetingQUpdate`
+- **Thank → follow-up** — `ThanksMoreInfo`, `ThanksUpdate`, `ThanksWaitQUpdate`, `ThanksWaitMoreInfo`
+- **Apology → follow-up** — `ApologyWaitQUpdate`, `ApologyWaitUpdate`, `ApologyInconvenienceMoreInfo`, `ApologyFrustrationMoreInfo`, `ApologyConfusionMoreInfo`
+- **Vitals checks** — `VitalsCheck`, `VitalsRadiationCheck`, `GreetingVitalsCheck`, `GreetingVitalsRadiationCheck`
+- **Legacy canned responses** (`L` prefix) — verbatim originals for every stage of the normal alert workflow
+- **Flair canned responses** — similar to the above, but with `{Variable}` tokens for randomized phrasing, and added flair
+
+#### Legacy vs. Flair
+
+Not every constructor needs to use variables. Sometimes you already have a set of phrases you're comfortable with and want them sent exactly as written — no randomness, no surprises. The `L`-prefixed constructors exist for that reason: they are static, predictable, and unchanged from the original wording.
+
+The flair versions of those same constructors inject `{Variable}` tokens to vary the phrasing on each use. Both are valid — which you reach for is a matter of preference and situation.
+
+Constructor values may themselves contain `{VarName}` tokens — they are resolved in the normal variable pass after expansion.
+
+> **Note:** Do not end constructor templates with punctuation. Let the auto-formatter handle it, or include your own closing punctuation (e.g. `?`) directly in the template string.
 
 ## Usage
 
@@ -466,7 +466,7 @@ The CLI entry point.
 - Passes `send` through to `_clipboard_paste` so Enter fires when requested
 - Prints any error to stderr and exits with status `1`
 
-## Quick Reference
+## Quick Reference Examples
 
 | Invoker | Script | Action | Result |
 |---------|--------|--------|--------|
