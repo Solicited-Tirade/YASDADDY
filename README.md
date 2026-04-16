@@ -19,10 +19,6 @@ The script currently supports three kinds of actions:
    
 > For functions 2 & 3, you can also include a `+N` or `-N` suffix to offset the timestamp.
 
-`alerts.py` is a small helper script that builds a Discord-formatted alert string, copies it to the clipboard, and pastes it. It is currently implemented for Linux (`wl-copy` + `ydotool`), with a Windows backend planned. The active backend is controlled by `OS_MODE` in `Settings.py`.
-
-Personally, I use this with a Stream Deck, but you can use whatever you want as long as it can run a python script. I made this script with multi-interface usages in mind.
-
 ---
 
 ## Table of Contents
