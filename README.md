@@ -2,7 +2,22 @@
 
 ## Yet Another Stream Deck Alert tool Developed for Dispatchers with Ydotool 
 > ###### Contrary to the name, its not exclusively for Dispatchers. If anything, it is mostly geared towards Team Leaders, but with its extensive customizability, you can mix and match however you please. The name came out of my chidlish need to shoehorn "YASDADDY" into a tool name.
-### This tool is agnostic, and can be run without a physical button, if you so choose. It just makes it more convenient. Essentially, you just need something that launches the python script.
+#### This tool is agnostic, and can be run with or without a physical button, if you so choose. It just makes it more convenient. Essentially, you just need something that launches the python script with arguments.
+
+## What It Does
+
+The script currently supports three kinds of actions:
+
+1. Custom message actions (`-M`)
+   These paste a freeform message at the current cursor position. The message can contain `{Variable}` tokens and `{ConstructorName}` shorthands that are resolved before pasting. [This is the core of the personalization system — build messages that reflect your own style, tone, and workflow rather than sending the same text every time.](#custom-message-actions)
+  
+2. Status actions
+   These build a full timestamped alert/status string for the voice chat status, and replaces the current field contents with `Ctrl+A` + paste functionality.
+
+3. Standalone Timestamp actions
+   These build only the Discord relative timestamp suffix and paste it at the current cursor position without `Ctrl+A`.
+   
+> For functions 2 & 3, you can also include a `+N` or `-N` suffix to offset the timestamp.
 
 `alerts.py` is a small helper script that builds a Discord-formatted alert string, copies it to the clipboard, and pastes it. It is currently implemented for Linux (`wl-copy` + `ydotool`), with a Windows backend planned. The active backend is controlled by `OS_MODE` in `Settings.py`.
 
@@ -11,9 +26,8 @@ Personally, I use this with a Stream Deck, but you can use whatever you want as 
 ---
 
 ## Table of Contents
-
-- [Before You Start](#before-you-start)
 - [What It Does](#what-it-does)
+- [Before You Start](#before-you-start)
 - [Requirements](#requirements)
 - [Future Plans](#future-plans)
 - [Configuration](#configuration)
@@ -54,20 +68,6 @@ Personally, I use this with a Stream Deck, but you can use whatever you want as 
 Everything else in `Settings.py` can be left at its default until you need it.
 
 ---
-
-## What It Does
-
-The script currently supports three kinds of actions:
-
-1. Status actions
-   These build a full alert/status string and replace the current field contents with `Ctrl+A` + paste.
-   They can also include a `+N` or `-N` suffix to offset the timestamp.
-
-2. Timestamp actions
-   These build only the Discord relative timestamp suffix and paste it at the current cursor position without `Ctrl+A`.
-
-3. Custom message actions (`-M`)
-   These paste a freeform message at the current cursor position. The message can contain `{Variable}` tokens and `{ConstructorName}` shorthands that are resolved before pasting. This is the core of the personalization system — build messages that reflect your own style, tone, and workflow rather than sending the same text every time.
 
 ## Requirements
 
