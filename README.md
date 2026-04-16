@@ -9,7 +9,7 @@
 The script currently supports three kinds of actions:
 
 1. Custom message actions (`-M`)
-   These paste a freeform message at the current cursor position. The message can contain `{Variable}` tokens and `{ConstructorName}` shorthands that are resolved before pasting. [This is the core of the personalization system — build messages that reflect your own style, tone, and workflow rather than sending the same text every time.](#custom-message-actions)
+   These paste a freeform message at the current cursor position. The message can contain `{Variable}` tokens and `{ConstructorName}` shorthands that are resolved before pasting. [This is the core of the personalization system — build messages that reflect your own style, tone, and workflow rather than sending the same text every time.](#Message-Variables)
   
 2. Status actions
    These build a full timestamped alert/status string for the voice chat status, and replaces the current field contents with `Ctrl+A` + paste functionality.
@@ -164,7 +164,7 @@ Variables are the building blocks of the personalization system — swap in your
 # Messages.py (built-in defaults)
 MESSAGE_VARIABLES: dict[str, str | list[str]] = {
     # Identity
-    "Name":                   "YourName",  # override in CustomMessages.py
+    "Name":                   "YourName",  # override in Settings.py
     # General
     "Greetings":              ["Hey there", "Hello", "Hi", ...],
     "Introduction":           ["my name is {Name}", "I'm {Name}", ...],  # {Name} resolved at build time
@@ -189,8 +189,9 @@ MESSAGE_VARIABLES: dict[str, str | list[str]] = {
     "ServiceWelcome":         ["thank you for choosing Medrunner Services", "welcome to Medrunner Services", ...],
     "Received":               ["we've received your alert", "your alert has been received", ...],
     "Assurances":             ["no need to worry", "you're in good hands", "help is on the way", ...],
-    "StandingBy":             ["I'll be your dispatcher for this alert", "I'm handling your dispatch today", ...],
-    "SendingInvites":         ["the team leader will be sending you a friend request and/or party invite", ...],
+    "DispatchIntro":          ["I'll be your dispatcher for this alert", "I'm handling your dispatch today", ...],
+    "DispatchSendingInvites": ["the team leader will be sending you a friend request and/or party invite", ...],
+    "LeaderSendingInvites":   ["let me know when you're ready for the invites", ...],
     "ReadyForInvites":        ["please let me know when you are ready to receive the invites", ...],
     "SpamAcceptKey":          ["please spam the accept key", "mash that accept key", ...],
     "TeamEnRoute":            ["our team is en route", "the team is headed your way", ...],
